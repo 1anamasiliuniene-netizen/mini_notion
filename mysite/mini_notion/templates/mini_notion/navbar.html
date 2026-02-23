@@ -1,0 +1,68 @@
+{% load static %}
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light" style="background-color: #ff9966;">
+    <div class="container-fluid">
+        <a class="navbar-brand text-white fw-bold" href="{% url 'dashboard' %}">Dashboard</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Left links -->
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                {% if user.is_authenticated %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                        My Projects
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'projects_list' project_type='personal' %}">Personal Projects</a></li>
+                        <li><a class="dropdown-item" href="{% url 'projects_list' project_type='work' %}">Work Projects</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown ms-2">
+                    <a class="btn btn-success dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        + Add Project
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'add_project' project_type='personal' %}">Personal</a></li>
+                        <li><a class="dropdown-item" href="{% url 'add_project' project_type='work' %}">Work</a></li>
+                    </ul>
+                </li>
+                {% endif %}
+            </ul>
+
+            <!-- Right links -->
+            <ul class="navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" role="button"
+                       data-bs-toggle="dropdown">
+                        {% if user.userprofile.photo %}
+                        <img src="{{ user.userprofile.photo.url }}" alt="Profile" class="rounded-circle me-2" width="35" height="35">
+                        {% else %}
+                        <img src="{% static 'default_profile.png' %}" alt="Profile" class="rounded-circle me-2" width="35" height="35">
+                        {% endif %}
+                        {{ user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'edit_profile' %}">Edit Profile</a></li>
+                        <li>
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item text-light">Logout</button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+                {% else %}
+                <li class="nav-item"><a class="nav-link text-white" href="{% url 'signup' %}">Sign Up</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="{% url 'login' %}">Login</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

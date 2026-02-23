@@ -1,0 +1,14 @@
+{% extends "mini_notion/base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Add Project{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Add Project</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-success">Save Project</button>
+    </form>
+</div>
+{% endblock %}

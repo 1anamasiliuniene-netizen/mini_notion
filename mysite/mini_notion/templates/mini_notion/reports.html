@@ -1,0 +1,89 @@
+{% extends "mini_notion/base.html" %}
+{% load static %}
+
+{% block title %}Project Report{% endblock %}
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card p-4">
+                <div class="card-body">
+
+                    <!-- Project Info -->
+                    <h3 class="card-title mb-3">{{ project.title }}</h3>
+                    {% if project.description %}
+                    <p class="mb-2"><strong>Description:</strong> {{ project.description }}</p>
+                    {% endif %}
+                    <p class="mb-2"><strong>Type:</strong> {{ project.get_project_type_display }}</p>
+                    <p class="mb-2"><strong>Owner:</strong> {{ project.owner.username }}</p>
+                    {% if project.shared_with.all %}
+                    <p class="mb-2"><strong>Shared With:</strong>
+                        {% for user in project.shared_with.all %}
+                        {{ user.username }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                    {% endif %}
+
+                    <!-- Tasks -->
+                    <h4 class="mt-4">Tasks</h4>
+                    {% if tasks %}
+                    <ul class="list-group mb-3">
+                        {% for task in tasks %}
+                        <li class="list-group-item">
+                            <strong>{{ task.title }}</strong>
+                            {% if task.due_date %}
+                            <span class="float-end badge {% if task.is_overdue %}bg-secondary{% else %}text-secondary{% endif %}">
+                        {% if task.is_overdue %}Overdue: {% else %}Due: {% endif %}{{ task.due_date }}
+                    </span>
+                            {% endif %}
+                            {% if task.assigned_to %}
+                            <br><small>Assigned to: {{ task.assigned_to.username }}</small>
+                            {% endif %}
+                            {% if task.status %}
+                            <br><small>Status: {{ task.status }}</small>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-secondary">No tasks yet.</p>
+                    {% endif %}
+
+                    <!-- Comments -->
+                    <h4 class="mt-4">Comments</h4>
+                    {% if comments %}
+                    <ul class="list-group mb-3">
+                        {% for comment in comments %}
+                        <li class="list-group-item">
+                            <strong>{{ comment.user.username }}:</strong> {{ comment.content }}
+                            <br><small class="text-secondary">{{ comment.created }}</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-secondary">No comments yet.</p>
+                    {% endif %}
+
+                    <!-- Reminders -->
+                    <h4 class="mt-4">Reminders</h4>
+                    {% if reminders %}
+                    <ul class="list-group mb-3">
+                        {% for reminder in reminders %}
+                        <li class="list-group-item">
+                            <strong>{{ reminder.title }}</strong>
+                            {% if reminder.due_time %}
+                            <span class="text-secondary float-end">Due: {{ reminder.due_time }}</span>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-secondary">No reminders yet.</p>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
