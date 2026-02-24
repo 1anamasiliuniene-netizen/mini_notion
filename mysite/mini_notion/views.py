@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
-@login_required
+
 def dashboard(request):
     today = date.today()
 
@@ -26,9 +26,15 @@ def dashboard(request):
     shared_projects_qs = Project.objects.filter(
         tasks__assigned_to__isnull=False
     ).exclude(owner=None).distinct().order_by('-created_at')
+
     shared_projects = []
     for project in shared_projects_qs:
-        if project.owner == request.user or project.tasks.filter(assigned_to=request.user).exists():
+        # only include tasks for logged-in user, if any
+        if request.user.is_authenticated:
+            if project.owner == request.user or project.tasks.filter(assigned_to=request.user).exists():
+                shared_projects.append(project)
+        else:
+            # for anonymous users, maybe show all public projects
             shared_projects.append(project)
 
     todo_tasks = None
@@ -63,6 +69,8 @@ def shared_project_detail(request, pk):
         'comments': comments,
         'reminders': reminders,
     })
+
+
 def search_results(request):
     query = request.GET.get('q', '')
 
@@ -92,6 +100,7 @@ def search_results(request):
 
     return render(request, 'mini_notion/search_results.html', context)
 
+
 # Authentication Views
 def signup_view(request):
     if request.method == 'POST':
@@ -104,6 +113,7 @@ def signup_view(request):
     else:
         form = UserCreationForm()
     return render(request, 'mini_notion/signup.html', {'form': form})
+
 
 @login_required
 def edit_profile(request):
@@ -126,6 +136,7 @@ def edit_profile(request):
         'profile_form': profile_form,
     })
 
+
 def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
@@ -136,9 +147,11 @@ def login_view(request):
         form = AuthenticationForm()
     return render(request, 'mini_notion/login.html', {'form': form})
 
+
 def logout_view(request):
     logout(request)
     return render(request, 'mini_notion/logout.html')
+
 
 # Project Views
 @login_required
@@ -157,6 +170,7 @@ def projects_list(request, project_type):
         'projects': page_obj,
         'project_type': project_type,
     })
+
 
 @login_required
 def project_detail(request, pk):
@@ -331,6 +345,7 @@ def task_detail(request, pk):
             return redirect('task_detail', pk=task.pk)
 
     return render(request, 'mini_notion/task_detail.html', {'task': task})
+
 
 @csrf_exempt
 def update_task_status(request):
