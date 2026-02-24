@@ -322,7 +322,6 @@ def task_detail(request, pk):
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
 
-        # Checkbox toggle
         if form_type == 'status_checkbox':
             task.status = 'Completed' if request.POST.get('status_checkbox') == 'on' else 'In Progress'
             task.save()
@@ -364,3 +363,14 @@ def update_task_status(request):
         except Task.DoesNotExist:
             pass
     return JsonResponse({'success': False})
+
+@login_required
+def delete_task(request, pk):
+    task = get_object_or_404(Task, pk=pk)
+    project = task.project
+
+    if request.user == task.assigned_to or request.user == project.owner:
+        task.delete()
+        messages.success(request, "Task deleted successfully.")
+
+    return redirect('project_detail', pk=project.id)

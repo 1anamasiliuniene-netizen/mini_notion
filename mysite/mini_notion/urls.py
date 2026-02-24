@@ -18,6 +18,7 @@ urlpatterns = [
     path('task/<int:task_id>/update/', views.update_task, name='update_task'),
     path('task/<int:pk>/', views.task_detail, name='task_detail'),
     path('update-task-status/', views.update_task_status, name='update_task_status'),
+    path('task/<int:pk>/delete/', views.delete_task, name='delete_task'),
 
     # Auth
     path('signup/', views.signup_view, name='signup'),
