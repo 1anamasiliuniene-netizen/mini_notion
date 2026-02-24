@@ -1,21 +1,16 @@
-from django.contrib import messages
-from django.contrib.auth.models import User
-from django.http import HttpResponseBadRequest
-from django.contrib.auth import login, logout
-from django.contrib.auth.forms import AuthenticationForm
-from .forms import UserProfileForm, UserForm
-from datetime import date
-from django.contrib.auth.forms import UserCreationForm
-from .models import UserProfile
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from .forms import ProjectForm, TaskForm
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 import json
-from .models import Project, Task, Comment_task
-
+from datetime import date
+from .models import UserProfile, Project, Task, Comment_task
+from .forms import UserProfileForm, UserForm, ProjectForm, TaskForm
+from django.core.paginator import Paginator
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseBadRequest, JsonResponse, Http404
+from django.contrib import messages
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
 @login_required
 def dashboard(request):
@@ -68,6 +63,34 @@ def shared_project_detail(request, pk):
         'comments': comments,
         'reminders': reminders,
     })
+def search_results(request):
+    query = request.GET.get('q', '')
+
+    results = []
+
+    if query:
+        # Find users whose username contains the query
+        users = User.objects.filter(username__icontains=query)
+
+        for user in users:
+            profile = UserProfile.objects.filter(user=user).first()
+            projects = Project.objects.filter(owner=user)
+            tasks = Task.objects.filter(assigned_to=user)
+
+            results.append({
+                'user': user,
+                'profile': profile,
+                'projects': projects if projects.exists() else None,
+                'tasks': tasks if tasks.exists() else None,
+            })
+
+    context = {
+        'query': query,
+        'results': results,
+        'today': date.today(),
+    }
+
+    return render(request, 'mini_notion/search_results.html', context)
 
 # Authentication Views
 def signup_view(request):
@@ -121,12 +144,17 @@ def logout_view(request):
 @login_required
 def projects_list(request, project_type):
     if project_type not in dict(Project.PROJECT_TYPES):
-        return HttpResponseBadRequest("Invalid project type")
+        raise Http404("Project type not found")
 
     projects = Project.objects.filter(owner=request.user, project_type=project_type).order_by('-created_at')
 
+    # Pagination
+    paginator = Paginator(projects, 3)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, 'mini_notion/projects_list.html', {
-        'projects': projects,
+        'projects': page_obj,
         'project_type': project_type,
     })
 

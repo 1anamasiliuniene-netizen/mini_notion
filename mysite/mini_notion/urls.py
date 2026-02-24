@@ -5,6 +5,7 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
     path('shared/<int:pk>/', views.shared_project_detail, name='shared_project_detail'),
+    path('search/', views.search_results, name='search_results'),
 
     # Projects
     path('projects/<str:project_type>/', views.projects_list, name='projects_list'),
