@@ -23,7 +23,7 @@ urlpatterns = [
     # Auth
     path('signup/', views.signup_view, name='signup'),
     path('login/', auth_views.LoginView.as_view(template_name='mini_notion/login.html'), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
 
     # Profile
     path('edit-profile/', views.edit_profile, name='edit_profile'),
