@@ -70,32 +70,35 @@
         <a href="{% url 'project_detail' task.project.id %}" class="btn btn-secondary">Back to Project</a>
     </form>
 
-    <!-- Comments Section -->
-    <div class="container mt-4">
-        <div class="card">
-            <div class="card-header">Comments</div>
-            <div class="card-body">
-                {% for comment in task.comments.all %}
-                <div class="mb-2 p-2 border rounded">
-                    <strong>{{ comment.user.username }}</strong>: {{ comment.content|linebreaks|urlize|safe }}
-                    <br>
-                    <small class="text-secondary">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
-                </div>
-                {% empty %}
-                <p>No comments yet.</p>
-                {% endfor %}
+ <!-- Comments Section -->
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">Comments</div>
+        <div class="card-body">
 
-                <!-- Add Comment Form -->
-                <form method="post" class="mt-4">
-                    {% csrf_token %}
-                    <input type="hidden" name="form_type" value="add_task_comment">
-                    <div class="mb-3">
+            <!-- Existing comments -->
+            {% for comment in task.comments.all %}
+            <div class="mb-2 p-2 border rounded">
+                <strong>{{ comment.user.username }}</strong>: {{ comment.content|linebreaks|urlize|safe }}
+                <br>
+                <small class="text-secondary">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+            </div>
+            {% empty %}
+            <p class="text-secondary">No comments yet.</p>
+            {% endfor %}
+
+            <!-- Add Comment Form -->
+            <form method="post" class="mt-4 p-3 border rounded bg-white task-detail-form">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="add_task_comment">
+                <div class="mb-3">
                     <textarea name="content" class="form-control"
                               placeholder="Add link to task completed or write your comment"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Submit</button>
-                </form>
-            </div>
+                </div>
+                <button type="submit" class="btn btn-primary text-white">Submit</button>
+            </form>
+
         </div>
     </div>
+</div>
     {% endblock %}

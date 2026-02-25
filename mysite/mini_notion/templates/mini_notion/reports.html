@@ -12,12 +12,12 @@
                     <!-- Project Info -->
                     <h3 class="card-title mb-3">{{ project.title }}</h3>
                     {% if project.description %}
-                    <p class="mb-2"><strong>Description:</strong> {{ project.description }}</p>
+                    <p class="mb-2 mb-2 text-secondary"><strong>Description:</strong> {{ project.description }}</p>
                     {% endif %}
-                    <p class="mb-2"><strong>Type:</strong> {{ project.get_project_type_display }}</p>
-                    <p class="mb-2"><strong>Owner:</strong> {{ project.owner.username }}</p>
+                    <p class="mb-2 mb-2 text-secondary"><strong>Type:</strong> {{ project.get_project_type_display }}</p>
+                    <p class="mb-2 mb-2 text-secondary"><strong>Owner:</strong> {{ project.owner.username }}</p>
                     {% if project.shared_with.all %}
-                    <p class="mb-2"><strong>Shared With:</strong>
+                    <p class="mb-2 mb-2 text-secondary"><strong>Shared With:</strong>
                         {% for user in project.shared_with.all %}
                         {{ user.username }}{% if not forloop.last %}, {% endif %}
                         {% endfor %}

@@ -1,5 +1,15 @@
 body {
     font-family: 'Merriweather', serif;
+    color: #6c757d;
+}
+
+.hero-section,
+.navbar,
+button.btn,
+input[type="submit"],
+input[type="button"],
+a.btn {
+    color: inherit; /* keep your custom color */
 }
 
 .hero-section {
@@ -34,11 +44,81 @@ body {
     border-radius: 16px;
     text-align: left;
     padding: 1.5rem;
-    width: 100%;
-    max-width: 500px;
+    width: auto;
+    max-width: 100%;
     min-height: 250px;
     margin-bottom: 2rem;
     box-shadow: 0 6px 15px rgba(128, 43, 0, 0.5);
+}
+
+/* Task detail buttons (including Add Comment) */
+.task-detail-card .btn,
+.task-detail-card button[type="submit"],
+.task-detail-card input[type="submit"] {
+    color: #fff !important;          /* force white text */
+    background-color: #009966 !important;
+    border-color: #009966 !important;
+}
+
+/* Force all project detail buttons to have white text */
+.card button.btn,
+.card a.btn {
+    color: #fff !important;
+}
+
+/* Keep hover effect consistent */
+.card button.btn:hover,
+.card a.btn:hover {
+    color: #fff !important;
+}
+
+.task-detail-card .btn:hover,
+.task-detail-card button[type="submit"]:hover,
+.task-detail-card input[type="submit"]:hover {
+    color: #fff !important;
+    background-color: #157347 !important;
+    border-color: #146c43 !important;
+}
+
+.task-detail-card button.btn-primary,
+form.task-detail-form button.btn-primary {
+    color: #fff !important;
+}
+
+.card-dashboard {
+    width: 100% !important;    /* fill the column */
+    max-width: 100% !important; /* remove the 500px limit */
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 6px 15px rgba(128, 43, 0, 0.5);
+}
+
+.card-dashboard a {
+    color: #6c757d !important;
+    text-decoration: none !important;
+}
+
+.card-dashboard a:hover {
+    text-decoration: underline !important;
+}
+
+.reports-card {
+    color: #6c757d; /* Bootstrap text-secondary color */
+}
+.card,
+.card *:not(.badge) {
+    color: #6c757d !important;
+}
+
+/* But keep links styled correctly */
+.card a {
+    color: #6c757d !important;
+    text-decoration: none !important;
+}
+
+.card a:hover {
+    text-decoration: underline !important;
 }
 
 /* Dropdown menus */
