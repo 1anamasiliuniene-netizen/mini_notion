@@ -6,7 +6,7 @@
 <div class="container mt-5">
     <div class="row g-4">
 
-        <!-- Left Column: Birthdays + Shared Projects (2/3 width) -->
+        <!-- Left Column: Birthdays + Shared Projects -->
         <div class="col-lg-8">
 
             <!-- Birthdays Today -->
@@ -19,7 +19,7 @@
                     {% if birthdays %}
                     <div class="row g-3">
                         {% for user_profile in birthdays %}
-                        <div class="col-4"> <!-- Three cards per row -->
+                        <div class="col-4">
                             <div class="card card-dashboard p-3 {% if forloop.counter == 2 %}card-pastel{% endif %}">
                                 {% if user_profile.photo %}
                                 <img src="{{ user_profile.photo.url }}" class="rounded-circle mb-2" width="60"
@@ -79,8 +79,7 @@
                     {% endif %}
                 </div>
             </div>
-
-        </div> <!-- end left column -->
+        </div>
 
  <!-- Right column: To Do -->
 <div class="col-lg-4 d-flex flex-column">
@@ -96,7 +95,6 @@
                     {% for task in todo_tasks %}
                     <li class="list-group-item d-flex align-items-center justify-content-between py-2">
                         <div class="d-flex align-items-start gap-2">
-                            <!-- Checkbox + task title -->
                             <input class="form-check-input mt-1" type="checkbox"
                                    data-task-id="{{ task.id }}"
                                    {% if task.status == 'Completed' %}checked disabled{% endif %}>
@@ -126,7 +124,6 @@
         </div>
     </div>
 </div>
-
-    </div> <!-- end row -->
-</div> <!-- end container -->
+    </div>
+</div>
 {% endblock %}

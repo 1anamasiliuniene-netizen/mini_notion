@@ -1,6 +1,8 @@
+/* Page background */
 body {
-    font-family: 'Merriweather', serif;
+    background-color: #fdf6f0;
     color: #6c757d;
+    font-family: 'Merriweather', serif;
 }
 
 .hero-section,
@@ -28,13 +30,6 @@ a.btn {
     font-weight: 300;       /* light */
     font-size: 1.25rem;
     color: white;
-}
-
-/* Page background */
-body {
-    background-color: #fdf6f0;
-    color: #6c757d;
-    font-family: 'Merriweather', serif;
 }
 
 /* Cards */
@@ -202,4 +197,28 @@ a.btn:hover {
     width: 100%;
     text-align: left;
     padding: 0.25rem 1rem;
+}
+
+/* Force all text in search results container to secondary gray */
+.search-results,
+.search-results h5,
+.search-results strong,
+.search-results td,
+.search-results th {
+    color: #6c757d !important;
+}
+
+/* Links in search results */
+.search-results a {
+    color: #6c757d !important;
+    text-decoration: none;
+}
+
+.search-results a:hover {
+    text-decoration: underline;
+}
+
+/* Badges */
+.search-results .badge {
+    color: #fff !important; /* keep badge text white */
 }
