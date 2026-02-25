@@ -1,5 +1,4 @@
-# mini_notion/apps.py
-from django.apps import AppConfig  # ← THIS IS REQUIRED
+from django.apps import AppConfig
 
 class MiniNotionConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'

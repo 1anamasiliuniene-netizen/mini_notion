@@ -22,7 +22,7 @@ ALLOWED_HOSTS = ALLOWED_HOSTS
 # Application definition
 
 INSTALLED_APPS = [
-    'mini_notion',
+    'mini_notion.apps.MiniNotionConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
 ]
+
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 MIDDLEWARE = [

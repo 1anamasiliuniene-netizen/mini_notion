@@ -11,7 +11,7 @@ urlpatterns = [
     path('projects/<str:project_type>/', views.projects_list, name='projects_list'),
     path('project/<int:pk>/', views.project_detail, name='project_detail'),
     path('projects/add/<str:project_type>/', views.add_project, name='add_project'),
-    path('project/<int:pk>/delete/', views.delete_project, name='delete_project'),# <- added
+    path('project/<int:pk>/delete/', views.delete_project, name='delete_project'),
 
     # Tasks
     path('projects/<int:project_id>/tasks/add/', views.add_task, name='add_task'),
