@@ -1,7 +1,7 @@
 import json
 from datetime import date
 from .models import UserProfile, Project, Task, Comment_task
-from .forms import UserProfileForm, UserForm, ProjectForm, TaskForm
+from .forms import UserProfileForm, UserForm, ProjectForm, TaskForm, TaskStatusForm
 from django.core.paginator import Paginator
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect, get_object_or_404
@@ -175,14 +175,28 @@ def projects_list(request, project_type):
 @login_required
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
-
     all_users = list(User.objects.exclude(id=request.user.id).order_by('username'))
     if project.owner not in all_users:
         all_users.insert(0, project.owner)
 
     if request.method == "POST":
+
+        # === Checkbox POST for task status ===
+        if request.POST.get('form_type') == 'update_task_status':
+            task_id = request.POST.get('task_id')
+            completed = request.POST.get('completed') == 'on'
+            try:
+                task = Task.objects.get(id=task_id, project=project)
+                task.status = 'Completed' if completed else 'In Progress'
+                task.save()
+                messages.success(request, f'Task "{task.title}" status updated!')
+            except Task.DoesNotExist:
+                messages.error(request, 'Task not found!')
+            return redirect('project_detail', pk=project.id)
+
         form_type = request.POST.get('form_type')
 
+        # === Edit project info ===
         if form_type == "edit_project":
             project.title = request.POST.get('title', project.title)
             project.description = request.POST.get('description', project.description)
@@ -190,6 +204,7 @@ def project_detail(request, pk):
             project.save()
             messages.success(request, "Project updated!")
 
+        # === Add task ===
         elif form_type == "add_task":
             title = request.POST.get('title')
             description = request.POST.get('description', '')
@@ -205,7 +220,7 @@ def project_detail(request, pk):
                         description=description,
                         due_date=due_date,
                         assigned_to=user,
-                        status='todo'
+                        status='In Progress'
                     )
             else:
                 assigned_user = None
@@ -220,14 +235,16 @@ def project_detail(request, pk):
                     description=description,
                     due_date=due_date,
                     assigned_to=assigned_user,
-                    status='todo'
+                    status='In Progress'
                 )
 
+        # === Add project comment ===
         elif form_type == "add_comment":
             content = request.POST.get('content')
             if content:
                 project.comments.create(user=request.user, content=content)
 
+        # === Add reminder ===
         elif form_type == "add_reminder":
             title = request.POST.get('title')
             due_time = request.POST.get('due_time')
@@ -236,6 +253,7 @@ def project_detail(request, pk):
 
         return redirect('project_detail', pk=project.id)
 
+    # GET request – render template
     context = {
         'project': project,
         'all_users': all_users,
@@ -245,7 +263,6 @@ def project_detail(request, pk):
         'reminders': project.reminders.all().order_by('due_time'),
     }
     return render(request, 'mini_notion/project_detail.html', context)
-
 
 @login_required
 def add_project(request, project_type):

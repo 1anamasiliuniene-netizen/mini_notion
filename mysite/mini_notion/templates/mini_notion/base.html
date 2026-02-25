@@ -47,6 +47,10 @@
 </body>
 </html>
 
+<!--Šis JavaScript kodas leidžia dinamiškai atnaujinti užduoties būseną naudojant AJAX POST užklausą per fetch API.
+Taip išvengiama puslapio perkrovimo ir pagerinama vartotojo patirtis.
+Taip pat naudojamas CSRF token saugumui užtikrinti.-->
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const checkboxes = document.querySelectorAll('.todo-checkbox');

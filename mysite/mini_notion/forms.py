@@ -69,3 +69,11 @@ class TaskForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.add_input(Submit('submit', 'Save Task'))
+
+
+class TaskStatusForm(forms.ModelForm):
+    completed = forms.BooleanField(required=False, label="Completed")
+
+    class Meta:
+        model = Task
+        fields = ['completed']
