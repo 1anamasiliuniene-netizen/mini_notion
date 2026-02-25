@@ -1,5 +1,6 @@
 {% extends "mini_notion/base.html" %}
 {% load static %}
+
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
@@ -30,7 +31,7 @@
                                      height="60" alt="Profile">
                                 {% endif %}
                                 <h6 class="mb-1">{{ user_profile.user.username }}</h6>
-                                <p class="mb-0">🎂 Happy Birthday!</p>
+                                <p class="mb-0"><b> Happy Birthday!</b></p>
                             </div>
                         </div>
                         {% endfor %}
@@ -51,9 +52,9 @@
                     {% if shared_projects %}
                     <div class="row g-3">
                         {% for project in shared_projects %}
-                        <div class="col-4">  <!-- Three projects per row -->
+                        <div class="col-4">
                             <div class="card small-card p-2 h-60">
-                                <a href="{% url 'shared_project_detail' pk=project.id %}">{{ project.title }}</a>
+                                <a href="{% url 'shared_project_detail' pk=project.id %}"><b>{{ project.title }}</b></a>
                                 <span class="text-secondary small">by {{ project.owner.username }}</span>
                             </div>
                         </div>
@@ -81,7 +82,7 @@
             </div>
         </div>
 
- <!-- Right column: To Do -->
+ <!-- To Do -->
 <div class="col-lg-4 d-flex flex-column">
     <div class="card card-dashboard flex-grow-1 h-100">
         <div class="card-body">
