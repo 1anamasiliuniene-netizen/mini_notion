@@ -69,14 +69,13 @@
         <!-- Right Column: Tasks -->
         <div class="col-lg-4 d-flex flex-column">
             <div class="card card-dashboard flex-grow-1">
-                <div class="card-header">Tasks</div>
-                <div class="card-body">
-                    {% if tasks %}
-                    <ul class="list-group mb-0">
-                        {% for task in tasks %}
+    <div class="card-header">Tasks</div>
+    <div class="card-body">
+        {% if user.is_authenticated %}
+            {% if tasks %}
+                <ul class="list-group mb-0">
+                    {% for task in tasks %}
                         <li class="list-group-item d-flex align-items-center justify-content-between py-2">
-
-                            <!-- Task title + checkbox form -->
                             <form method="post" class="d-flex align-items-center flex-grow-1 mb-0">
                                 {% csrf_token %}
                                 <input type="hidden" name="form_type" value="delete_task">
@@ -86,21 +85,20 @@
                                 </div>
                                 <span>{{ task.title }}</span>
                             </form>
-
-                            <!-- Overdue badge -->
                             <div class="ms-2 text-end">
                                 {% if task.due_date and task.due_date < today %}
-                                <span class="badge bg-secondary">Overdue: {{ task.due_date }}</span>
+                                    <span class="badge bg-secondary">Overdue: {{ task.due_date }}</span>
                                 {% endif %}
                             </div>
-
                         </li>
-                        {% endfor %}
-                    </ul>
-                    {% else %}
-                    <a class="nav-link text-white" href="{% url 'login' %}">Login</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-secondary mb-0">No tasks yet.</p>
+            {% endif %}
+        {% else %}
+            <a class="nav-link text-white" href="{% url 'login' %}">Login to see your tasks</a>
+        {% endif %}
+    </div>
+</div>
         {% endblock %}

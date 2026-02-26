@@ -1,7 +1,7 @@
 import json
 from datetime import date
 from .models import UserProfile, Project, Task, Comment_task
-from .forms import UserProfileForm, UserForm, ProjectForm, TaskForm, TaskStatusForm
+from .forms import UserProfileForm, UserForm, ProjectForm, TaskForm
 from django.core.paginator import Paginator
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect, get_object_or_404
@@ -119,9 +119,7 @@ def signup_view(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()  # create the user
-            # create UserProfile immediately
-            UserProfile.objects.create(user=user)
+            user = form.save()
             return redirect('login')
     else:
         form = UserCreationForm()

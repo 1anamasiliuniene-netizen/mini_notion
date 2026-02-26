@@ -114,7 +114,7 @@ USE_TZ = False
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 LOGIN_REDIRECT_URL = 'dashboard'  # redirect after login
-LOGOUT_REDIRECT_URL = 'login'     # redirect after logout
+LOGOUT_REDIRECT_URL = 'dashboard'    # redirect after logout
 LOGIN_URL = '/login/'
 
 MEDIA_URL = '/media/'

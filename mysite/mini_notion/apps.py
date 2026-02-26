@@ -5,4 +5,4 @@ class MiniNotionConfig(AppConfig):
     name = 'mini_notion'
 
     def ready(self):
-        import mini_notion.signals
+        from . import signals
