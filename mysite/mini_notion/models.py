@@ -33,11 +33,6 @@ class Project(models.Model):
         return User.objects.filter(task__project=self).distinct()
 
 
-class Card(models.Model):
-    project = models.ForeignKey(Project, related_name='project_cards', on_delete=models.CASCADE)
-    title = models.CharField(max_length=200)
-    content = models.TextField()
-
 class Task(models.Model):
     STATUS_CHOICES = (
         ('todo', 'To Do'),
