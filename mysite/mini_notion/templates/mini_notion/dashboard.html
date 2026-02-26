@@ -24,14 +24,13 @@
                             <div class="card card-dashboard p-3 {% if forloop.counter == 2 %}card-pastel{% endif %}">
                                 {% if user_profile.photo %}
                                 <img src="{{ user_profile.photo.url }}" class="rounded-circle mb-2" width="60"
-                                     height="60"
-                                     alt="Profile">
+                                     height="60" alt="Profile">
                                 {% else %}
                                 <img src="{% static 'default_profile.png' %}" class="rounded-circle mb-2" width="60"
                                      height="60" alt="Profile">
                                 {% endif %}
                                 <h6 class="mb-1">{{ user_profile.user.username }}</h6>
-                                <p class="mb-0"><b> Happy Birthday!</b></p>
+                                <p class="mb-0"><b>Happy Birthday!</b></p>
                             </div>
                         </div>
                         {% endfor %}
@@ -60,21 +59,6 @@
                         </div>
                         {% endfor %}
                     </div>
-                    {% if shared_projects.has_other_pages %}
-                    <nav class="mt-3 d-flex justify-content-between">
-                        {% if shared_projects.has_previous %}
-                        <a class="btn btn-sm btn-outline-primary"
-                           href="?page={{ shared_projects.previous_page_number }}">Previous</a>
-                        {% endif %}
-                        <span class="align-self-center small text-secondary">
-                            Page {{ shared_projects.number }} of {{ shared_projects.paginator.num_pages }}
-                        </span>
-                        {% if shared_projects.has_next %}
-                        <a class="btn btn-sm btn-outline-primary"
-                           href="?page={{ shared_projects.next_page_number }}">Next</a>
-                        {% endif %}
-                    </nav>
-                    {% endif %}
                     {% else %}
                     <p class="text-secondary mb-0">No shared projects yet.</p>
                     {% endif %}
@@ -82,49 +66,41 @@
             </div>
         </div>
 
- <!-- To Do -->
-<div class="col-lg-4 d-flex flex-column">
-    <div class="card card-dashboard flex-grow-1 h-100">
-        <div class="card-body">
-            <h4 class="mb-4 d-flex align-items-center">
-                <i class="bi bi-list-check me-2"></i>
-                To Do
-            </h4>
-            {% if user.is_authenticated %}
-                {% if todo_tasks %}
-                <ul class="list-group mb-3">
-                    {% for task in todo_tasks %}
-                    <li class="list-group-item d-flex align-items-center justify-content-between py-2">
-                        <div class="d-flex align-items-start gap-2">
-                            <input class="form-check-input mt-1" type="checkbox"
-                                   data-task-id="{{ task.id }}"
-                                   {% if task.status == 'Completed' %}checked disabled{% endif %}>
-                            <div>
-                                <a href="{% url 'task_detail' task.id %}"
-                                   class="text-decoration-none {% if task.status == 'Completed' %}text-decoration-line-through text-muted{% else %}text-dark{% endif %}">
-                                    {{ task.title }}
-                                </a>
-                            </div>
-                        </div>
+        <!-- Right Column: Tasks -->
+        <div class="col-lg-4 d-flex flex-column">
+            <div class="card card-dashboard flex-grow-1">
+                <div class="card-header">Tasks</div>
+                <div class="card-body">
+                    {% if tasks %}
+                    <ul class="list-group mb-0">
+                        {% for task in tasks %}
+                        <li class="list-group-item d-flex align-items-center justify-content-between py-2">
 
-                        <!-- Due date / overdue badge -->
-                        {% if task.due_date and task.due_date < today %}
-                        <span class="badge bg-secondary">Overdue: {{ task.due_date }}</span>
-                        {% elif task.due_date %}
-                        <span class="text-secondary small">Due: {{ task.due_date }}</span>
-                        {% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                <p class="text-secondary mb-0">No pending tasks.</p>
-                {% endif %}
-            {% else %}
-            <p class="text-secondary mb-0">Log in to see your tasks.</p>
-            {% endif %}
+                            <!-- Task title + checkbox form -->
+                            <form method="post" class="d-flex align-items-center flex-grow-1 mb-0">
+                                {% csrf_token %}
+                                <input type="hidden" name="form_type" value="delete_task">
+                                <input type="hidden" name="task_id" value="{{ task.id }}">
+                                <div class="form-check me-2">
+                                    <input class="form-check-input" type="checkbox" onchange="this.form.submit()">
+                                </div>
+                                <span>{{ task.title }}</span>
+                            </form>
+
+                            <!-- Overdue badge -->
+                            <div class="ms-2 text-end">
+                                {% if task.due_date and task.due_date < today %}
+                                <span class="badge bg-secondary">Overdue: {{ task.due_date }}</span>
+                                {% endif %}
+                            </div>
+
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <a class="nav-link text-white" href="{% url 'login' %}">Login</a>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-    </div>
-</div>
-{% endblock %}
+        {% endblock %}

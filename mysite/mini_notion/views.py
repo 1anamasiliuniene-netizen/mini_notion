@@ -22,32 +22,45 @@ def dashboard(request):
         date_of_birth__day=today.day
     )
 
-    # Public shared projects (linked to reports)
+    # Public shared projects
     shared_projects_qs = Project.objects.filter(
         tasks__assigned_to__isnull=False
     ).exclude(owner=None).distinct().order_by('-created_at')
 
     shared_projects = []
     for project in shared_projects_qs:
-        # only include tasks for logged-in user, if any
         if request.user.is_authenticated:
             if project.owner == request.user or project.tasks.filter(assigned_to=request.user).exists():
                 shared_projects.append(project)
         else:
-            # for anonymous users, maybe show all public projects
             shared_projects.append(project)
 
+    # Handle task deletion if POST
+    if request.method == 'POST' and request.user.is_authenticated:
+        if request.POST.get('form_type') == 'delete_task':
+            task_id = request.POST.get('task_id')
+            try:
+                task = Task.objects.get(id=task_id)
+                if task.assigned_to == request.user or task.project.owner == request.user:
+                    task.delete()
+                    messages.success(request, f'Task "{task.title}" deleted!')
+            except Task.DoesNotExist:
+                messages.error(request, 'Task not found!')
+            return redirect('dashboard')
+
+    # Tasks only for authenticated users
     todo_tasks = None
     if request.user.is_authenticated:
-        todo_tasks = Task.objects.filter(assigned_to=request.user).exclude(status='Completed').order_by('due_date')
+        todo_tasks = Task.objects.filter(
+            assigned_to=request.user
+        ).exclude(status='Completed').order_by('due_date')
 
     return render(request, 'mini_notion/dashboard.html', {
         'birthdays': birthdays,
         'shared_projects': shared_projects,
-        'todo_tasks': todo_tasks,
+        'tasks': todo_tasks,
         'today': today,
     })
-
 
 def shared_project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
@@ -150,7 +163,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return render(request, 'mini_notion/logout.html')
+    return redirect('dashboard')
 
 
 # Project Views
@@ -238,13 +251,13 @@ def project_detail(request, pk):
                     status='In Progress'
                 )
 
-        # === Add project comment ===
+        # Add project comment
         elif form_type == "add_comment":
             content = request.POST.get('content')
             if content:
                 project.comments.create(user=request.user, content=content)
 
-        # === Add reminder ===
+        # Add reminder
         elif form_type == "add_reminder":
             title = request.POST.get('title')
             due_time = request.POST.get('due_time')
