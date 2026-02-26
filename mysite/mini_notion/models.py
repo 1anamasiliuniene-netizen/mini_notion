@@ -12,6 +12,7 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+
 class Project(models.Model):
 
     PROJECT_TYPES = [
@@ -50,11 +51,15 @@ class Task(models.Model):
     def __str__(self):
         return self.title
 
+
 class Comment_project(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='comments')
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.project.title}"
 
 class Comment_task(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -64,6 +69,7 @@ class Comment_task(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.task.title}"
+
 
 class Reminder(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='reminders')
