@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.utils import timezone
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -23,7 +22,7 @@ class Project(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     project_type = models.CharField(max_length=20, choices=PROJECT_TYPES)
-    due_date = models.DateField(null=True, blank=True)  # ✅ add this
+    due_date = models.DateField(null=True, blank=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='projects')
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -32,6 +31,7 @@ class Project(models.Model):
 
     def update_shared_users_from_tasks(self):
         return User.objects.filter(task__project=self).distinct()
+
 
 class Card(models.Model):
     project = models.ForeignKey(Project, related_name='project_cards', on_delete=models.CASCADE)
