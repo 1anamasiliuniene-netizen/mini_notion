@@ -1,0 +1,3 @@
+daphne -p 8000 mysite.asgi:application
+
+http://127.0.0.1:8000/

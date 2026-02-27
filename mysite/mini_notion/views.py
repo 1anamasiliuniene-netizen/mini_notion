@@ -22,6 +22,12 @@ from django.db.models import Q
 
 
 @login_required
+def chat_room(request, room_name):
+    return render(request, 'mini_notion/chat_room.html', {
+        'room_name': room_name
+    })
+
+@login_required
 def navbar_reminders_json(request):
     today = now()
 
