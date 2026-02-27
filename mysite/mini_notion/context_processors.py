@@ -1,4 +1,7 @@
 import random
+from django.utils.timezone import now
+from .models import Project, Reminder
+from django.db.models import Q
 
 PHRASES = [
     "Keep pushing forward!",
@@ -35,3 +38,17 @@ def hero_phrase(request):
     return {
         'hero_phrase': random.choice(PHRASES)
     }
+
+def reminders_for_user(request):
+    if not request.user.is_authenticated:
+        return {}
+
+    reminders = Reminder.objects.filter(
+        project__owner=request.user,
+        completed=False
+    ).order_by('due_time')[:5]
+
+    for r in reminders:
+        r.is_overdue = r.due_time < now()
+
+    return {'navbar_reminders': reminders}

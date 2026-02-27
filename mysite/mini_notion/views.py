@@ -1,21 +1,64 @@
-import json
+import os, json
 from datetime import date
 from .models import UserProfile, Project, Task, Comment_task
 from .forms import UserProfileForm, UserForm, ProjectForm, TaskForm
 from django.core.paginator import Paginator
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponseBadRequest, JsonResponse, Http404
+from django.shortcuts import render, redirect
+from django.http import HttpResponseBadRequest, Http404
 from django.contrib import messages
 from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.db.models import DateField
 from django.db.models.functions import Cast
-import os
-from django.db.models import Q, Count, F
+from django.contrib.auth.decorators import login_required
+from django.utils.timezone import now
+from .models import Reminder, Project
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
+
+@login_required
+def navbar_reminders_json(request):
+    today = now()
+
+    reminders = Reminder.objects.filter(
+        project__owner=request.user,
+        completed=False
+    ).order_by('due_time')[:5]
+
+    data = []
+    for r in reminders:
+        data.append({
+            'id': r.id,
+            'title': r.title,
+            'project_title': r.project.title,
+            'project_id': r.project.id,
+            'due_time': r.due_time.strftime("%d %b %H:%M"),
+            'is_overdue': r.due_time < today,
+        })
+
+    return JsonResponse({'reminders': data})
+
+
+@login_required
+@require_POST
+def resolve_reminder(request, reminder_id):
+    reminder = get_object_or_404(
+        Reminder,
+        id=reminder_id,
+        project__in=Project.objects.filter(
+            Q(owner=request.user) | Q(shared_with=request.user)
+        )
+    )
+
+    reminder.completed = True
+    reminder.save()
+
+    return redirect(request.META.get('HTTP_REFERER', '/'))
 
 def dashboard(request):
     today = date.today()
@@ -112,6 +155,17 @@ def shared_project_detail(request, pk):
         'reminders': reminders,
     })
 
+@login_required
+@require_POST
+def delete_reminder(request, reminder_id):
+    reminder = get_object_or_404(
+        Reminder,
+        id=reminder_id,
+        project__owner=request.user  # only project owner can delete
+    )
+    project_id = reminder.project.id
+    reminder.delete()
+    return redirect('project_detail', pk=project_id)
 
 def search_results(request):
     query = request.GET.get('q', '')

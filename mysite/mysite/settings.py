@@ -58,6 +58,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'mini_notion.context_processors.hero_phrase',
+                'mini_notion.context_processors.reminders_for_user',
             ],
         },
     },

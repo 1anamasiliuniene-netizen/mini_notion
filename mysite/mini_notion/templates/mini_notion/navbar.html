@@ -22,7 +22,8 @@
                             Projects</a></li>
                         <li><a class="dropdown-item" href="{% url 'projects_list' project_type='work' %}">Work
                             Projects</a></li>
-                        <li><a class="dropdown-item" href="{% url 'completed_projects_archive' %}"><i class="bi bi-archive me-2"></i>Completed Projects</a>
+                        <li><a class="dropdown-item" href="{% url 'completed_projects_archive' %}"><i
+                                class="bi bi-archive me-2"></i>Completed Projects</a>
                     </ul>
                 </li>
 
@@ -46,6 +47,42 @@
             </form>
 
             <!-- Right links -->
+            <!-- Navbar Reminders Bell -->
+            {% if user.is_authenticated %}
+            <li class="nav-item dropdown ms-3 list-unstyled">
+                <a class="nav-link position-relative text-white" href="#" role="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-bell fs-5"></i>
+                    {% if navbar_reminders %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
+            {{ navbar_reminders|length }}
+        </span>
+                    {% endif %}
+                </a>
+
+                <ul class="dropdown-menu dropdown-menu-end p-0" style="width: 300px;">
+                    {% if navbar_reminders %}
+                    {% for reminder in navbar_reminders %}
+                    <li class="dropdown-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-semibold">{{ reminder.title }}</div>
+                            <small class="text-muted">{{ reminder.due_time|date:"d M H:i" }}</small>
+                        </div>
+                        <form method="post" action="{% url 'resolve_reminder' reminder.id %}" class="mb-0">
+                            {% csrf_token %}
+                            {% if not reminder.completed %}
+                            <button type="submit" class="btn btn-sm btn-success">✓</button>
+                            {% else %}
+                            <span class="badge bg-secondary">Completed</span>
+                            {% endif %}
+                        </form>
+                    </li>
+                    {% endfor %}
+                    {% else %}
+                    <li><span class="dropdown-item text-muted">No reminders</span></li>
+                    {% endif %}
+                </ul>
+            </li>
+            {% endif %}
             <ul class="navbar-nav ms-auto">
                 {% if user.is_authenticated %}
                 <li class="nav-item dropdown">
@@ -77,3 +114,47 @@
         </div>
     </div>
 </nav>
+
+
+<script>
+    async function loadNavbarReminders() {
+        try {
+            const response = await fetch("{% url 'navbar_reminders_json' %}");
+            if (!response.ok) throw new Error('Network error');
+
+            const data = await response.json();
+            const reminderList = document.getElementById('reminderList');
+            const reminderBadge = document.getElementById('reminderBadge');
+
+            reminderList.innerHTML = '';
+
+            if (data.reminders.length === 0) {
+                reminderList.innerHTML = '<li><span class="dropdown-item text-muted">No reminders</span></li>';
+                reminderBadge.classList.add('d-none');
+            } else {
+                data.reminders.forEach(r => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <a class="dropdown-item d-flex justify-content-between align-items-center" href="/project/${r.project_id}/">
+                            <span>${r.title}</span>
+                            <small class="${r.is_overdue ? 'text-danger' : 'text-secondary'}">${r.due_time}</small>
+                        </a>
+                    `;
+                    reminderList.appendChild(li);
+                });
+
+                // Show badge with count
+                reminderBadge.textContent = data.reminders.length;
+                reminderBadge.classList.remove('d-none');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // Initial load
+    loadNavbarReminders();
+
+    // Refresh every 60 seconds
+    setInterval(loadNavbarReminders, 60000);
+</script>

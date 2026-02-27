@@ -72,26 +72,56 @@
         <div class="col-12 col-lg-6 d-flex flex-column">
 
             <!-- Reminders -->
-            <div class="card mb-4 flex-grow-1">
-                <div class="card-header">Reminders</div>
+            <div class="card mb-4 flex-grow-1 shadow-sm">
+                <div class="card-header fw-bold">Reminders</div>
                 <div class="card-body">
-                    {% for reminder in reminders %}
-                    <div class="mb-2 p-1 border rounded d-flex justify-content-between">
-                        <div>
-                            <strong>{{ reminder.title }}</strong> - {{ reminder.due_time }}
-                        </div>
-                    </div>
-                    {% empty %}
-                    <p>No reminders yet.</p>
-                    {% endfor %}
 
-                    <form method="post" class="mt-5">
+                    {% if reminders %}
+                    <ul class="list-group list-group-flush mb-3">
+                        {% for reminder in reminders %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ reminder.title }}</strong>
+                                {% if reminder.due_time %}
+                                - <small class="text-muted">{{ reminder.due_time|date:"d M H:i" }}</small>
+                                {% endif %}
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <!-- Resolve button -->
+                                <form action="{% url 'resolve_reminder' reminder.id %}" method="post">
+                                    {% csrf_token %}
+                                    {% if not reminder.completed %}
+                                    <button type="submit" class="btn btn-success btn-sm">Done</button>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Completed</span>
+                                    {% endif %}
+                                </form>
+
+                                <!-- Delete button for owner only -->
+                                {% if project.owner == user %}
+                                <form action="{% url 'delete_reminder' reminder.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">No reminders yet.</p>
+                    {% endif %}
+
+                    <!-- Add Reminder Form -->
+                    <form method="post">
                         {% csrf_token %}
                         <input type="hidden" name="form_type" value="add_reminder">
-                        <input class="form-control mb-2" type="text" name="title" placeholder="Reminder title">
-                        <input class="form-control mb-2" type="datetime-local" name="due_time">
-                        <button class="btn btn-warning" type="submit">Add Reminder</button>
+                        <input class="form-control mb-2" type="text" name="title" placeholder="Reminder title" required>
+                        <input class="form-control mb-2" type="datetime-local" name="due_time" required>
+                        <button class="btn btn-primary w-100" type="submit">Add Reminder</button>
                     </form>
+
                 </div>
             </div>
 

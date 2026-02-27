@@ -6,6 +6,9 @@ urlpatterns = [
     path('', views.dashboard, name='dashboard'),
     path('shared/<int:pk>/', views.shared_project_detail, name='shared_project_detail'),
     path('search/', views.search_results, name='search_results'),
+    path('navbar-reminders-json/', views.navbar_reminders_json, name='navbar_reminders_json'),
+    path('reminder/<int:reminder_id>/resolve/', views.resolve_reminder, name='resolve_reminder'),
+    path('reminder/<int:reminder_id>/delete/', views.delete_reminder, name='delete_reminder'),
 
     # Projects
     path('projects/<str:project_type>/', views.projects_list, name='projects_list'),
