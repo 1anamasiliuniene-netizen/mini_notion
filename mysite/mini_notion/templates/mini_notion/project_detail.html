@@ -43,7 +43,7 @@
                 </div>
             </div>
 
-            <!-- Comments -->
+            <!-- Existing comments -->
             <div class="card mb-4 flex-grow-1">
                 <div class="card-header">Comments</div>
                 <div class="card-body">
@@ -56,7 +56,8 @@
                     <p>No comments yet.</p>
                     {% endfor %}
 
-                    <form method="post" class="mt-3">
+                    <!-- Add Comment Form -->
+                    <form method="post" class="mt-5">
                         {% csrf_token %}
                         <input type="hidden" name="form_type" value="add_comment">
                         <textarea class="form-control mb-2" name="content" placeholder="Your comment"></textarea>
@@ -84,7 +85,7 @@
                     <p>No reminders yet.</p>
                     {% endfor %}
 
-                    <form method="post" class="mt-2">
+                    <form method="post" class="mt-5">
                         {% csrf_token %}
                         <input type="hidden" name="form_type" value="add_reminder">
                         <input class="form-control mb-2" type="text" name="title" placeholder="Reminder title">
@@ -126,7 +127,7 @@
                     {% endfor %}
 
                     <!-- Add Task -->
-                    <form method="post" class="mt-2">
+                    <form method="post" class="mt-5">
                         {% csrf_token %}
                         <input type="hidden" name="form_type" value="add_task">
                         <input class="form-control mb-1" type="text" name="title" placeholder="Task title">

@@ -67,38 +67,59 @@
         </div>
 
         <!-- Right Column: Tasks -->
-        <div class="col-lg-4 d-flex flex-column">
-            <div class="card card-dashboard flex-grow-1">
-    <div class="card-header">Tasks</div>
-    <div class="card-body">
-        {% if user.is_authenticated %}
-            {% if tasks %}
-                <ul class="list-group mb-0">
-                    {% for task in tasks %}
+<div class="col-lg-4 d-flex flex-column">
+    <div class="card card-dashboard flex-grow-1">
+
+        <!-- Card Header -->
+        <div class="card-header">Tasks for {{ selected_date|date:"M d, Y" }}</div>
+
+        <!-- Card Body -->
+        <div class="card-body">
+
+            <!-- Date Picker inside the card, full width of the card only -->
+            <form method="get" class="mb-3">
+                <label for="task-date" class="form-label">Select date:</label>
+                <input type="date" id="task-date" name="date" value="{{ selected_date|date:'Y-m-d' }}" class="form-control" onchange="this.form.submit()">
+            </form>
+
+            {% if user.is_authenticated %}
+                {% if tasks %}
+                    <ul class="list-group mb-0">
+                        {% for task in tasks %}
                         <li class="list-group-item d-flex align-items-center justify-content-between py-2">
+
+                            <!-- Left: Checkbox + Task Title -->
                             <form method="post" class="d-flex align-items-center flex-grow-1 mb-0">
                                 {% csrf_token %}
-                                <input type="hidden" name="form_type" value="delete_task">
+                                <input type="hidden" name="form_type" value="update_task_status">
                                 <input type="hidden" name="task_id" value="{{ task.id }}">
                                 <div class="form-check me-2">
-                                    <input class="form-check-input" type="checkbox" onchange="this.form.submit()">
+                                    <input class="form-check-input" type="checkbox" name="completed"
+                                           onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
                                 </div>
-                                <span>{{ task.title }}</span>
+                                <a href="{% url 'task_detail' task.id %}" class="text-decoration-none">
+                                    {{ task.title }}
+                                </a>
                             </form>
+
+                            <!-- Right: Overdue Badge -->
                             <div class="ms-2 text-end">
                                 {% if task.due_date and task.due_date < today %}
                                     <span class="badge bg-secondary">Overdue: {{ task.due_date }}</span>
                                 {% endif %}
                             </div>
+
                         </li>
-                    {% endfor %}
-                </ul>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-secondary mb-0">No tasks yet.</p>
+                {% endif %}
             {% else %}
-                <p class="text-secondary mb-0">No tasks yet.</p>
+                <a class="nav-link text-white" href="{% url 'login' %}">Login to see your tasks</a>
             {% endif %}
-        {% else %}
-            <a class="nav-link text-white" href="{% url 'login' %}">Login to see your tasks</a>
-        {% endif %}
+
+        </div>
     </div>
 </div>
         {% endblock %}

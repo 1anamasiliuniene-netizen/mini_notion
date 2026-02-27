@@ -11,10 +11,23 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-
+from django.db.models import DateField
+from django.db.models.functions import Cast
+from django.contrib.auth import views as auth_views
+from django.urls import path
 
 def dashboard(request):
     today = date.today()
+
+    # Selected date (from query param ?date=YYYY-MM-DD), default to today
+    selected_date_str = request.GET.get('date')
+    if selected_date_str:
+        try:
+            selected_date = date.fromisoformat(selected_date_str)
+        except ValueError:
+            selected_date = today
+    else:
+        selected_date = today
 
     # Birthdays
     birthdays = UserProfile.objects.filter(
@@ -36,31 +49,39 @@ def dashboard(request):
             shared_projects.append(project)
 
     # Handle task deletion if POST
-    if request.method == 'POST' and request.user.is_authenticated:
-        if request.POST.get('form_type') == 'delete_task':
-            task_id = request.POST.get('task_id')
-            try:
-                task = Task.objects.get(id=task_id)
-                if task.assigned_to == request.user or task.project.owner == request.user:
-                    task.delete()
-                    messages.success(request, f'Task "{task.title}" deleted!')
-            except Task.DoesNotExist:
-                messages.error(request, 'Task not found!')
-            return redirect('dashboard')
+    if request.POST.get('form_type') == 'update_task_status':
+        task_id = request.POST.get('task_id')
+        completed = request.POST.get('completed') == 'on'
+
+        try:
+            task = Task.objects.get(id=task_id, assigned_to=request.user)
+            task.status = 'Completed' if completed else 'In Progress'
+            task.save()
+            messages.success(request, f'Task "{task.title}" status updated!')
+        except Task.DoesNotExist:
+            messages.error(request, "Task not found.")
+
+        return redirect('dashboard')
 
     # Tasks only for authenticated users
-    todo_tasks = None
     if request.user.is_authenticated:
-        todo_tasks = Task.objects.filter(
-            assigned_to=request.user
+        todo_tasks = Task.objects.annotate(
+            due_date_only=Cast('due_date', DateField())
+        ).filter(
+            assigned_to=request.user,
+            due_date_only=selected_date
         ).exclude(status='Completed').order_by('due_date')
+    else:
+        todo_tasks = []
 
     return render(request, 'mini_notion/dashboard.html', {
         'birthdays': birthdays,
         'shared_projects': shared_projects,
         'tasks': todo_tasks,
         'today': today,
+        'selected_date': selected_date,
     })
+
 
 def shared_project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
@@ -402,3 +423,5 @@ def delete_task(request, pk):
         messages.success(request, "Task deleted successfully.")
 
     return redirect('project_detail', pk=project.id)
+
+# password reset views using Django's built-in views
