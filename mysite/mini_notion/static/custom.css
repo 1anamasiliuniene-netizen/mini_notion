@@ -222,3 +222,12 @@ a.btn:hover {
 .search-results .badge {
     color: #fff !important; /* keep badge text white */
 }
+
+@media print {
+    .list-group-item { page-break-inside: avoid; }
+}
+
+@media print {
+    body * { visibility: hidden; }
+    .report-card, .report-card * { visibility: visible; }
+}

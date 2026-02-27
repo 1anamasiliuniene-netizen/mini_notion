@@ -13,8 +13,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.db.models import DateField
 from django.db.models.functions import Cast
-from django.contrib.auth import views as auth_views
-from django.urls import path
+import os
+
 
 def dashboard(request):
     today = date.today()
@@ -90,7 +90,14 @@ def shared_project_detail(request, pk):
     # Annotate tasks with 'is_overdue'
     tasks = project.tasks.all()
     for task in tasks:
-        task.is_overdue = task.due_date is not None and task.due_date < today
+        task.is_overdue = task.due_date is not None and task.due_date < today and task.status != 'Completed'
+        if task.attachment:
+            task.attachment_filename = os.path.basename(task.attachment.name)
+
+    tasks = sorted(
+        tasks,
+        key=lambda t: (not t.is_overdue, t.due_date if t.due_date else date.max)
+    )
 
     # Pass comments and reminders
     comments = project.comments.all()
@@ -369,7 +376,7 @@ def task_detail(request, pk):
     task = get_object_or_404(Task, pk=pk)
 
     if request.method == 'POST':
-        form_type = request.POST.get('form_type')
+        form_type = request.POST.get('form_type', "")
 
         if form_type == 'status_checkbox':
             task.status = 'Completed' if request.POST.get('status_checkbox') == 'on' else 'In Progress'
@@ -382,6 +389,10 @@ def task_detail(request, pk):
             task.due_date = request.POST.get('due_date') or None
             task.status = request.POST.get('status', task.status)
             task.description = request.POST.get('description', '').strip() or ''
+
+            if request.FILES.get("attachment"):
+                task.attachment = request.FILES["attachment"]
+
             task.save()
             return redirect('task_detail', pk=task.pk)
 

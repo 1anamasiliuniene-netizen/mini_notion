@@ -4,6 +4,11 @@
 {% block title %}Project Report{% endblock %}
 
 {% block content %}
+
+<div class="d-flex justify-content-end mb-3">
+    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">Print Report</button>
+</div>
+
 <div class="container my-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
@@ -15,7 +20,8 @@
                     {% if project.description %}
                     <p class="mb-2 mb-2 text-secondary"><strong>Description:</strong> {{ project.description }}</p>
                     {% endif %}
-                    <p class="mb-2 mb-2 text-secondary"><strong>Type:</strong> {{ project.get_project_type_display }}</p>
+                    <p class="mb-2 mb-2 text-secondary"><strong>Type:</strong> {{ project.get_project_type_display }}
+                    </p>
                     <p class="mb-2 mb-2 text-secondary"><strong>Owner:</strong> {{ project.owner.username }}</p>
                     {% if project.shared_with.all %}
                     <p class="mb-2 mb-2 text-secondary"><strong>Shared With:</strong>
@@ -31,18 +37,27 @@
                     <ul class="list-group mb-3">
                         {% for task in tasks %}
                         <li class="list-group-item">
-                            <strong>{{ task.title }}</strong>
-                            {% if task.due_date %}
-                            <span class="float-end badge {% if task.is_overdue %}bg-secondary{% else %}text-secondary{% endif %}">
-                        {% if task.is_overdue %}Overdue: {% else %}Due: {% endif %}{{ task.due_date }}
-                    </span>
-                            {% endif %}
-                            {% if task.assigned_to %}
-                            <br><small>Assigned to: {{ task.assigned_to.username }}</small>
-                            {% endif %}
-                            {% if task.status %}
-                            <br><small>Status: {{ task.status }}</small>
-                            {% endif %}
+                            <div>
+                                <strong>{{ task.title }}</strong>
+
+                                {% if task.assigned_to %}
+                                <br><small>Assigned to: {{ task.assigned_to.username }}</small>
+                                {% endif %}
+
+                                {% if task.status %}
+                                <br><small class="text-primary">Status: {{ task.status }}</small>
+                                {% endif %}
+
+                                {% if task.attachment %}
+                                <br><small>Attachment: {{ task.attachment_filename }}</small>
+                                {% endif %}
+                            </div>
+
+                            <div class="float-end">
+                                {% if task.is_overdue %}
+                                <span class="badge bg-secondary">Overdue: {{ task.due_date }}</span>
+                                {% endif %}
+                            </div>
                         </li>
                         {% endfor %}
                     </ul>

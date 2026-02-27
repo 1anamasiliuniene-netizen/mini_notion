@@ -120,6 +120,13 @@
                             {% if task.due_date %} - {{ task.due_date }}{% endif %}
                         </div>
 
+                        <!-- Attachment Icon -->
+                        {% if task.attachment %}
+                        <a href="{{ task.attachment.url }}" target="_blank" class="ms-2" title="Download attachment">
+                            <i class="bi bi-paperclip"></i>
+                        </a>
+                        {% endif %}
+
                         <a href="{% url 'task_detail' task.id %}" class="btn btn-sm btn-outline-primary ms-2">Edit</a>
                     </form>
                     {% empty %}

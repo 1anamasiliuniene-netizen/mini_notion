@@ -19,7 +19,26 @@
     <link href="{% static 'custom.css' %}" rel="stylesheet">
 </head>
 <body>
-
+<style>
+@media print {
+    body * {
+        visibility: hidden; /* hide everything */
+    }
+    .card, .card * {
+        visibility: visible; /* show report card only */
+    }
+    .card {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    /* Optional: hide buttons or other UI elements */
+    button, .btn {
+        display: none !important;
+    }
+}
+</style>
 <!-- Hero Section -->
 <div class="hero-section w-100 py-4 mb-2" style="background-color: #007399; color: white;">
     <div class="container d-flex flex-column">
