@@ -14,6 +14,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.db.models import DateField
 from django.db.models.functions import Cast
 import os
+from django.db.models import Q, Count, F
 
 
 def dashboard(request):
@@ -198,7 +199,12 @@ def projects_list(request, project_type):
     if project_type not in dict(Project.PROJECT_TYPES):
         raise Http404("Project type not found")
 
-    projects = Project.objects.filter(owner=request.user, project_type=project_type).order_by('-created_at')
+    # Only active projects
+    projects = Project.objects.filter(
+        owner=request.user,
+        project_type=project_type,
+        is_completed=False
+    ).order_by('-created_at')
 
     # Pagination
     paginator = Paginator(projects, 3)
@@ -209,6 +215,40 @@ def projects_list(request, project_type):
         'projects': page_obj,
         'project_type': project_type,
     })
+
+
+@login_required
+def completed_projects_archive(request):
+    today = date.today()
+
+    # Only include projects where all tasks are completed
+    projects = []
+    for project in Project.objects.all():
+        tasks = project.tasks.all()
+        if tasks.exists() and all(task.status == 'Completed' for task in tasks):
+            # Annotate tasks with overdue and attachment info
+            for task in tasks:
+                task.is_overdue = task.due_date and task.due_date < today and task.status != 'Completed'
+                if task.attachment:
+                    task.attachment_filename = os.path.basename(task.attachment.name)
+            projects.append(project)
+
+    return render(request, 'mini_notion/completed_projects.html', {
+        'projects': projects,
+        'today': today,
+    })
+
+
+@login_required
+def archive_project(request, pk):
+    project = get_object_or_404(Project, pk=pk, owner=request.user)
+
+    # Only archive if all tasks are completed
+    if project.tasks.exists() and all(task.status == 'done' for task in project.tasks.all()):
+        project.is_completed = True
+        project.save()
+
+    return redirect('projects_list', project_type=project.project_type)
 
 
 @login_required
@@ -302,6 +342,7 @@ def project_detail(request, pk):
         'reminders': project.reminders.all().order_by('due_time'),
     }
     return render(request, 'mini_notion/project_detail.html', context)
+
 
 @login_required
 def add_project(request, project_type):
@@ -423,6 +464,7 @@ def update_task_status(request):
         except Task.DoesNotExist:
             pass
     return JsonResponse({'success': False})
+
 
 @login_required
 def delete_task(request, pk):

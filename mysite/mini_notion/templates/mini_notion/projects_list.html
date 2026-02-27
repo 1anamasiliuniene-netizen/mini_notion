@@ -22,7 +22,7 @@
                     <strong>Created:</strong> {{ project.created_at|date:"d M Y" }}
                 </p>
             </div>
-            <div class="card-footer text-end d-flex justify-content-between">
+            <div class="card-footer text-end d-flex justify-content-between align-items-center">
                 {% if project.owner == request.user %}
                 <div>
                     <a href="{% url 'add_task' project.id %}" class="btn btn-sm btn-primary">+ Add Task</a>
@@ -34,6 +34,27 @@
                         {% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
                     </form>
+
+                    <!-- Archive button: only enabled if all tasks are done -->
+                    {% if project.tasks.all %}
+                        {% with all_done=True %}
+                            {% for task in project.tasks.all %}
+                                {% if task.status != 'done' %}
+                                    {% with all_done=False %}{% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                            <form method="POST" action="{% url 'archive_project' project.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success" {% if not all_done %}disabled{% endif %}>
+                                    Archive
+                                </button>
+                            </form>
+                        {% endwith %}
+                    {% else %}
+                        <!-- No tasks: disable Archive -->
+                        <button class="btn btn-sm btn-success" disabled>Archive</button>
+                    {% endif %}
+
                 </div>
                 {% else %}
                 <span class="text-muted">Read-only</span>
@@ -61,9 +82,7 @@
         {% for num in projects.paginator.page_range %}
         {% if projects.number == num %}
         <li class="page-item">
-    <span class="page-link rounded-pill text-secondary border-secondary px-3">
-        {{ num }}
-    </span>
+            <span class="page-link rounded-pill text-secondary border-secondary px-3">{{ num }}</span>
         </li>
         {% else %}
         <li class="page-item">

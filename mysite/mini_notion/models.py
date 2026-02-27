@@ -27,6 +27,8 @@ class Project(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='projects')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    is_completed = models.BooleanField(default=False)
+
     def __str__(self):
         return self.title
 

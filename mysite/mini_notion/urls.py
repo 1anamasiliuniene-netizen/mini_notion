@@ -12,6 +12,7 @@ urlpatterns = [
     path('project/<int:pk>/', views.project_detail, name='project_detail'),
     path('projects/add/<str:project_type>/', views.add_project, name='add_project'),
     path('project/<int:pk>/delete/', views.delete_project, name='delete_project'),
+    path('archive/completed/', views.completed_projects_archive, name='completed_projects_archive'),
 
     # Tasks
     path('projects/<int:project_id>/tasks/add/', views.add_task, name='add_task'),
@@ -19,6 +20,7 @@ urlpatterns = [
     path('task/<int:pk>/', views.task_detail, name='task_detail'),
     path('update-task-status/', views.update_task_status, name='update_task_status'),
     path('task/<int:pk>/delete/', views.delete_task, name='delete_task'),
+    path('project/<int:pk>/archive/', views.archive_project, name='archive_project'),
 
     # Auth
     path('signup/', views.signup_view, name='signup'),
