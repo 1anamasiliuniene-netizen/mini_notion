@@ -231,3 +231,15 @@ a.btn:hover {
     body * { visibility: hidden; }
     .report-card, .report-card * { visibility: visible; }
 }
+
+@media (max-width: 576px) {
+    .navbar-nav .dropdown-menu {
+        width: 90vw !important; /* almost full width on mobile */
+        left: auto !important;   /* reset Bootstrap end alignment */
+        right: 5vw !important;  /* small margin from edge */
+    }
+    #reminderBadge {
+        font-size: 0.7rem;
+        padding: 0.25em 0.35em;
+    }
+}

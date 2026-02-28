@@ -16,16 +16,10 @@ from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now
 from .models import Reminder, Project
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-
-
-@login_required
-def chat_room(request, room_name):
-    return render(request, 'mini_notion/chat_room.html', {
-        'room_name': room_name
-    })
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
 
 @login_required
 def navbar_reminders_json(request):
@@ -38,6 +32,7 @@ def navbar_reminders_json(request):
 
     data = []
     for r in reminders:
+        csrf_token = get_token(request)
         data.append({
             'id': r.id,
             'title': r.title,

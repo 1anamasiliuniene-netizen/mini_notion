@@ -1,107 +1,145 @@
 {% load static %}
 
-<!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #F06434;">
     <div class="container-fluid">
-        <a class="navbar-brand text-white fw-bold" href="{% url 'dashboard' %}">Dashboard</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+
+        <a class="navbar-brand text-white fw-bold" href="{% url 'dashboard' %}">
+            Dashboard
+        </a>
+
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
-            <!-- Left links -->
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+            <!-- LEFT SIDE -->
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-2">
                 {% if user.is_authenticated %}
+                <!-- My Projects -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                    <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">
                         My Projects
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{% url 'projects_list' project_type='personal' %}">Personal
-                            Projects</a></li>
-                        <li><a class="dropdown-item" href="{% url 'projects_list' project_type='work' %}">Work
-                            Projects</a></li>
-                        <li><a class="dropdown-item" href="{% url 'completed_projects_archive' %}"><i
-                                class="bi bi-archive me-2"></i>Completed Projects</a>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'projects_list' project_type='personal' %}">
+                                Personal Projects
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'projects_list' project_type='work' %}">
+                                Work Projects
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'completed_projects_archive' %}">
+                                <i class="bi bi-archive me-2"></i> Completed Projects
+                            </a>
+                        </li>
                     </ul>
                 </li>
 
-                <li class="nav-item dropdown ms-2">
-                    <a class="btn btn-success dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                <!-- Add Project -->
+                <li class="nav-item dropdown">
+                    <a class="btn btn-success dropdown-toggle" href="#" data-bs-toggle="dropdown">
                         + Add Project
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{% url 'add_project' project_type='personal' %}">Personal</a>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'add_project' project_type='personal' %}">Personal</a>
                         </li>
-                        <li><a class="dropdown-item" href="{% url 'add_project' project_type='work' %}">Work</a></li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'add_project' project_type='work' %}">Work</a>
+                        </li>
                     </ul>
                 </li>
                 {% endif %}
             </ul>
 
-            <form class="d-flex ms-auto" method="get" action="{% url 'search_results' %}">
-                <input class="form-control me-2" type="search" name="q" placeholder="Search users" aria-label="Search"
+            <!-- SEARCH -->
+            <form class="d-flex my-2 my-lg-0 ms-lg-auto me-lg-3"
+                  method="get"
+                  action="{% url 'search_results' %}">
+                <input class="form-control me-2"
+                       style="max-width: 200px;"
+                       type="search"
+                       name="q"
+                       placeholder="Search users"
                        required>
-                <button class="btn btn-outline-light" type="submit">Search</button>
+                <button class="btn btn-outline-light btn-sm" type="submit">Search</button>
             </form>
 
-            <!-- Right links -->
-            <!-- Navbar Reminders Bell -->
-            {% if user.is_authenticated %}
-            <li class="nav-item dropdown ms-3 list-unstyled">
-                <a class="nav-link position-relative text-white" href="#" role="button" data-bs-toggle="dropdown">
-                    <i class="bi bi-bell fs-5"></i>
-                    {% if navbar_reminders %}
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
-            {{ navbar_reminders|length }}
-        </span>
-                    {% endif %}
-                </a>
-
-                <ul class="dropdown-menu dropdown-menu-end p-0" style="width: 300px;">
-                    {% if navbar_reminders %}
-                    {% for reminder in navbar_reminders %}
-                    <li class="dropdown-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="fw-semibold">{{ reminder.title }}</div>
-                            <small class="text-muted">{{ reminder.due_time|date:"d M H:i" }}</small>
-                        </div>
-                        <form method="post" action="{% url 'resolve_reminder' reminder.id %}" class="mb-0">
-                            {% csrf_token %}
-                            {% if not reminder.completed %}
-                            <button type="submit" class="btn btn-sm btn-success">✓</button>
-                            {% else %}
-                            <span class="badge bg-secondary">Completed</span>
-                            {% endif %}
-                        </form>
-                    </li>
-                    {% endfor %}
-                    {% else %}
-                    <li><span class="dropdown-item text-muted">No reminders</span></li>
-                    {% endif %}
-                </ul>
-            </li>
-            {% endif %}
-            <ul class="navbar-nav ms-auto">
+            <!-- RIGHT SIDE -->
+            <ul class="navbar-nav d-flex flex-row align-items-center gap-3 mt-3 mt-lg-0 px-2 px-lg-0">
                 {% if user.is_authenticated %}
+                <!-- Reminders Bell -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" role="button"
-                       data-bs-toggle="dropdown">
-                        {% if user.userprofile.photo %}
-                        <img src="{{ user.userprofile.photo.url }}" alt="Profile" class="rounded-circle me-2" width="35"
-                             height="35">
+                    <a class="nav-link text-white" href="#" data-bs-toggle="dropdown">
+                        <span class="position-relative d-inline-block">
+                            <i class="bi bi-bell fs-5"></i>
+                            {% if navbar_reminders %}
+                            <span id="reminderBadge"
+                                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
+                                {{ navbar_reminders|length }}
+                            </span>
+                            {% endif %}
+                        </span>
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end p-2" style="width: 280px;" id="reminderList">
+                        {% if navbar_reminders %}
+                        {% for reminder in navbar_reminders %}
+                        <li class="dropdown-item d-flex justify-content-between align-items-center">
+
+                            <!-- Link to Project Detail -->
+                            <a href="{% url 'project_detail' reminder.project.id %}"
+                               class="flex-grow-1 text-decoration-none text-secondary">
+                                <div>
+                                    <div class="fw-semibold">{{ reminder.title }}</div>
+                                    <small class="text-muted">{{ reminder.due_time|date:"d M H:i" }}</small>
+                                </div>
+                            </a>
+
+                            <!-- Resolve Button -->
+                            <form method="post" action="{% url 'resolve_reminder' reminder.id %}" class="mb-0">
+                                {% csrf_token %}
+                                {% if not reminder.completed %}
+                                <button type="submit" class="btn btn-sm btn-success">✓</button>
+                                {% else %}
+                                <span class="badge bg-secondary">Completed</span>
+                                {% endif %}
+                            </form>
+                        </li>
+                        {% endfor %}
                         {% else %}
-                        <i class="bi bi-person-circle me-2 fs-4 text-white"></i>
+                        <li><span class="dropdown-item text-muted">No reminders</span></li>
+                        {% endif %}
+                    </ul>
+                </li>
+
+                <!-- User Profile -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center text-white"
+                       href="#" data-bs-toggle="dropdown">
+                        {% if user.userprofile.photo %}
+                        <img src="{{ user.userprofile.photo.url }}" alt="Profile" class="rounded-circle me-2" width="32"
+                             height="32">
+                        {% else %}
+                        <i class="bi bi-person-circle me-2 fs-5"></i>
                         {% endif %}
                         {{ user.username }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="{% url 'edit_profile' %}">Edit Profile</a></li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'edit_profile' %}">Edit Profile</a>
+                        </li>
                         <li>
                             <form method="post" action="{% url 'logout' %}">
                                 {% csrf_token %}
-                                <button type="submit" class="dropdown-item text-light">Logout</button>
+                                <button type="submit" class="dropdown-item text-danger">Logout</button>
                             </form>
                         </li>
                     </ul>
@@ -111,50 +149,7 @@
                 <li class="nav-item"><a class="nav-link text-white" href="{% url 'login' %}">Login</a></li>
                 {% endif %}
             </ul>
+
         </div>
     </div>
 </nav>
-
-
-<script>
-    async function loadNavbarReminders() {
-        try {
-            const response = await fetch("{% url 'navbar_reminders_json' %}");
-            if (!response.ok) throw new Error('Network error');
-
-            const data = await response.json();
-            const reminderList = document.getElementById('reminderList');
-            const reminderBadge = document.getElementById('reminderBadge');
-
-            reminderList.innerHTML = '';
-
-            if (data.reminders.length === 0) {
-                reminderList.innerHTML = '<li><span class="dropdown-item text-muted">No reminders</span></li>';
-                reminderBadge.classList.add('d-none');
-            } else {
-                data.reminders.forEach(r => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <a class="dropdown-item d-flex justify-content-between align-items-center" href="/project/${r.project_id}/">
-                            <span>${r.title}</span>
-                            <small class="${r.is_overdue ? 'text-danger' : 'text-secondary'}">${r.due_time}</small>
-                        </a>
-                    `;
-                    reminderList.appendChild(li);
-                });
-
-                // Show badge with count
-                reminderBadge.textContent = data.reminders.length;
-                reminderBadge.classList.remove('d-none');
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    }
-
-    // Initial load
-    loadNavbarReminders();
-
-    // Refresh every 60 seconds
-    setInterval(loadNavbarReminders, 60000);
-</script>

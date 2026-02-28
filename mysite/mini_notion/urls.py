@@ -33,9 +33,6 @@ urlpatterns = [
     # Profile
     path('edit-profile/', views.edit_profile, name='edit_profile'),
 
-    # Chat
-    path('chat/<str:room_name>/', views.chat_room, name='chat_room'),
-
     # Password reset
     path(
         "password_reset/",
