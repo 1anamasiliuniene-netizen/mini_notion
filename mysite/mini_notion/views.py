@@ -8,11 +8,9 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponseBadRequest, Http404
 from django.contrib import messages
 from django.contrib.auth import login, logout
-from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.db.models import DateField
 from django.db.models.functions import Cast
-from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now
 from .models import Reminder, Project
 from django.views.decorators.http import require_POST
@@ -20,7 +18,70 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+from django.contrib.auth.models import User
+from .models import ProjectMembership
 
+
+@login_required
+def admin_panel(request):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+
+    users = User.objects.all()
+    memberships = ProjectMembership.objects.select_related('user', 'project')
+
+    context = {
+        'users': users,
+        'memberships': memberships,
+        'role_choices': ProjectMembership.ROLE_CHOICES,
+    }
+
+    return render(request, 'mini_notion/admin_panel.html', context)
+
+@login_required
+def toggle_user_active(request, user_id):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+
+    user = get_object_or_404(User, id=user_id)
+
+    # Prevent self-deactivation (very important)
+    if user != request.user:
+        user.is_active = not user.is_active
+        user.save()
+
+    return redirect('admin_panel')
+
+@login_required
+def toggle_superuser(request, user_id):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+
+    user = get_object_or_404(User, id=user_id)
+
+    # Prevent self-demotion (important!)
+    if user != request.user:
+        user.is_superuser = not user.is_superuser
+        user.save()
+
+    return redirect('admin_panel')
+
+@login_required
+def change_role(request, membership_id):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+
+    membership = get_object_or_404(ProjectMembership, id=membership_id)
+
+    if request.method == "POST":
+        new_role = request.POST.get("role")
+        if new_role in dict(ProjectMembership.ROLE_CHOICES):
+            membership.role = new_role
+            membership.save()
+
+    return redirect('admin_panel')
 @login_required
 def navbar_reminders_json(request):
     today = now()
@@ -60,6 +121,46 @@ def resolve_reminder(request, reminder_id):
     reminder.save()
 
     return redirect(request.META.get('HTTP_REFERER', '/'))
+
+@login_required
+def settings_view(request):
+    return render(request, 'mini_notion/settings.html')
+
+
+@login_required
+def update_notifications(request):
+    if request.method == 'POST':
+        profile = request.user.userprofile
+        profile.reminders = bool(request.POST.get('reminders'))
+        profile.email_notifications = bool(request.POST.get('email_notifications'))
+        profile.in_app_notifications = bool(request.POST.get('in_app_notifications'))
+        profile.save()
+        messages.success(request, "Notification settings updated.")
+    return redirect('settings')
+
+
+@login_required
+def update_preferences(request):
+    if request.method == 'POST':
+        profile = request.user.userprofile
+        profile.theme = request.POST.get('theme', 'light')
+        profile.default_view = request.POST.get('default_view', 'list')
+        profile.language = request.POST.get('language', 'en')
+        profile.save()
+        messages.success(request, "Preferences updated.")
+    return redirect('settings')
+
+
+@login_required
+def deactivate_account(request):
+    if request.method == 'POST':
+        user = request.user
+        user.is_active = False
+        user.save()
+        messages.warning(request, "Your account has been deactivated.")
+        from django.contrib.auth import logout
+        logout(request)
+    return redirect('login')
 
 def dashboard(request):
     today = date.today()
@@ -156,6 +257,7 @@ def shared_project_detail(request, pk):
         'reminders': reminders,
     })
 
+
 @login_required
 @require_POST
 def delete_reminder(request, reminder_id):
@@ -167,6 +269,7 @@ def delete_reminder(request, reminder_id):
     project_id = reminder.project.id
     reminder.delete()
     return redirect('project_detail', pk=project_id)
+
 
 def search_results(request):
     query = request.GET.get('q', '')
@@ -262,12 +365,12 @@ def projects_list(request, project_type):
     ).order_by('-created_at')
 
     # Pagination
-    paginator = Paginator(projects, 3)
+    paginator = Paginator(projects, 3)  # 3 projects per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     return render(request, 'mini_notion/projects_list.html', {
-        'projects': page_obj,
+        'projects': page_obj,  # pass the page object
         'project_type': project_type,
     })
 
@@ -276,17 +379,10 @@ def projects_list(request, project_type):
 def completed_projects_archive(request):
     today = date.today()
 
-    # Only include projects where all tasks are completed
-    projects = []
-    for project in Project.objects.all():
-        tasks = project.tasks.all()
-        if tasks.exists() and all(task.status == 'Completed' for task in tasks):
-            # Annotate tasks with overdue and attachment info
-            for task in tasks:
-                task.is_overdue = task.due_date and task.due_date < today and task.status != 'Completed'
-                if task.attachment:
-                    task.attachment_filename = os.path.basename(task.attachment.name)
-            projects.append(project)
+    projects = Project.objects.filter(
+        owner=request.user,
+        is_completed=True
+    )
 
     return render(request, 'mini_notion/completed_projects.html', {
         'projects': projects,
@@ -299,16 +395,28 @@ def archive_project(request, pk):
     project = get_object_or_404(Project, pk=pk, owner=request.user)
 
     # Only archive if all tasks are completed
-    if project.tasks.exists() and all(task.status == 'done' for task in project.tasks.all()):
+    if project.tasks.exists() and all(task.status == 'Completed' for task in project.tasks.all()):
         project.is_completed = True
         project.save()
+        messages.success(request, f'Project "{project.title}" archived.')
 
     return redirect('projects_list', project_type=project.project_type)
 
+@login_required
+def recover_project(request, pk):
+    project = get_object_or_404(Project, pk=pk, owner=request.user)
+
+    # Recover the project
+    project.is_completed = False
+    project.save()
+    messages.success(request, f'Project "{project.title}" recovered.')
+
+    # Redirect to the active projects list of the correct type
+    return redirect('projects_list', project_type=project.project_type)
 
 @login_required
 def project_detail(request, pk):
-    project = get_object_or_404(Project, pk=pk)
+    project = get_object_or_404(Project, id=pk)
     all_users = list(User.objects.exclude(id=request.user.id).order_by('username'))
     if project.owner not in all_users:
         all_users.insert(0, project.owner)

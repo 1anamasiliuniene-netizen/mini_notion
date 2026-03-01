@@ -1,138 +1,72 @@
-/* Page background */
+/* ============================= */
+/* Global Links (Light & Dark) */
+/* ============================= */
+a {
+    color: #007399 !important; /* hero blue */
+    text-decoration: none;
+}
+
+a:hover {
+    color: #005266 !important; /* darker blue */
+    text-decoration: underline;
+}
+
+/* Nested links inherit global style */
+.card a,
+.card-dashboard a,
+.table a,
+.form-control a,
+.dropdown-menu a {
+    color: inherit !important;
+}
+
+.card a:hover,
+.card-dashboard a:hover,
+.table a:hover,
+.form-control a:hover,
+.dropdown-menu a:hover {
+    color: #005266 !important;
+}
+
+/* ============================= */
+/* Base Styles (Light Theme) */
+/* ============================= */
 body {
     background-color: #fdf6f0;
     color: #6c757d;
     font-family: 'Merriweather', serif;
 }
 
-.hero-section,
-.navbar,
-button.btn,
-input[type="submit"],
-input[type="button"],
-a.btn {
-    color: inherit; /* keep your custom color */
-}
-
+/* Hero Section */
 .hero-section {
-    background-color: #007399; /* dark pastel */
+    background-color: #007399;
     padding: 4rem 0;
     color: white;
 }
-
 .hero-title {
-    font-weight: 700;      /* bold */
+    font-weight: 700;
     margin-bottom: 1rem;
 }
-
 .hero-random-phrase {
-    font-style: italic;     /* true italic */
-    font-weight: 300;       /* light */
+    font-style: italic;
+    font-weight: 300;
     font-size: 1.25rem;
     color: white;
 }
 
-/* Cards */
-.card {
+/* Cards & Dashboards */
+.card, .card-dashboard {
     background-color: #fff !important;
     color: #6c757d !important;
     border-radius: 16px;
     text-align: left;
     padding: 1.5rem;
-    width: auto;
     max-width: 100%;
-    min-height: 250px;
     margin-bottom: 2rem;
     box-shadow: 0 6px 15px rgba(128, 43, 0, 0.5);
 }
 
-/* Task detail buttons (including Add Comment) */
-.task-detail-card .btn,
-.task-detail-card button[type="submit"],
-.task-detail-card input[type="submit"] {
-    color: #fff !important;          /* force white text */
-    background-color: #009966 !important;
-    border-color: #009966 !important;
-}
-
-/* Force all project detail buttons to have white text */
-.card button.btn,
-.card a.btn {
-    color: #fff !important;
-}
-
-/* Keep hover effect consistent */
-.card button.btn:hover,
-.card a.btn:hover {
-    color: #fff !important;
-}
-
-.task-detail-card .btn:hover,
-.task-detail-card button[type="submit"]:hover,
-.task-detail-card input[type="submit"]:hover {
-    color: #fff !important;
-    background-color: #157347 !important;
-    border-color: #146c43 !important;
-}
-
-.task-detail-card button.btn-primary,
-form.task-detail-form button.btn-primary {
-    color: #fff !important;
-}
-
-.card-dashboard {
-    width: 100% !important;    /* fill the column */
-    max-width: 100% !important; /* remove the 500px limit */
-    margin-bottom: 2rem;
-    padding: 1.5rem;
-    border-radius: 16px;
-    box-shadow: 0 6px 15px rgba(128, 43, 0, 0.5);
-}
-
-.card-dashboard a {
-    color: #6c757d !important;
-    text-decoration: none !important;
-}
-
-.card-dashboard a:hover {
-    text-decoration: underline !important;
-}
-
-.reports-card {
-    color: #6c757d; /* Bootstrap text-secondary color */
-}
-.card,
-.card *:not(.badge) {
-    color: #6c757d !important;
-}
-
-/* But keep links styled correctly */
-.card a {
-    color: #6c757d !important;
-    text-decoration: none !important;
-}
-
-.card a:hover {
-    text-decoration: underline !important;
-}
-
-/* Dropdown menus */
-.dropdown-menu,
-.dropdown-item {
-    color: #6c757d !important;
-}
-
-/* All links: secondary color, no underline by default */
-a {
-    color: #6c757d;
-    text-decoration: none;
-}
-
-/* Underline on hover */
-a:hover {
-    text-decoration: underline;
-}
-
+/* Buttons */
 button.btn,
 input[type="submit"],
 input[type="button"],
@@ -148,98 +82,295 @@ input[type="button"]:hover,
 a.btn:hover {
     background-color: #157347 !important;
     border-color: #146c43 !important;
+}
+
+/* Dropdowns (light theme) */
+.dropdown-menu, .dropdown-item {
+    background-color: #f0f0f0 !important;
+    color: #007399 !important;
+    border-radius: 0.5rem !important;
+}
+
+.dropdown-item:hover {
+    background-color: #005266 !important; /* dark blue hover, no green */
     color: #fff !important;
 }
 
-.navbar-toggler {
-    background-color: transparent !important;
-    border: 1px solid rgba(255, 255, 255, 0.5) !important;
-    padding: 0.25rem 0.75rem;
+/* ============================= */
+/* Dark Mode Styles */
+/* ============================= */
+body.dark-mode {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
 }
 
-.navbar-toggler:hover,
-.navbar-toggler:focus {
+/* Cards & Lists */
+body.dark-mode .card,
+body.dark-mode .card-dashboard,
+body.dark-mode .card-body,
+body.dark-mode .card-header,
+body.dark-mode .list-group-item {
+    background-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    border-color: #444 !important;
+}
+
+/* Tables */
+body.dark-mode table,
+body.dark-mode .table,
+body.dark-mode .table-bordered,
+body.dark-mode .table-striped,
+body.dark-mode .table-responsive {
+    background-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    border-color: #555 !important;
+}
+body.dark-mode thead th {
+    background-color: #3a3a3a !important;
+    color: #f5f5f0 !important;
+}
+body.dark-mode tbody tr:nth-child(even) { background-color: #323232 !important; }
+body.dark-mode tbody tr:nth-child(odd) { background-color: #2a2a2a !important; }
+body.dark-mode tbody td,
+body.dark-mode tbody th { border-color: #555 !important; }
+
+/* Inputs / Textareas / Selects */
+body.dark-mode input.form-control,
+body.dark-mode textarea.form-control,
+body.dark-mode select.form-control,
+body.dark-mode input[type="text"],
+body.dark-mode input[type="search"],
+body.dark-mode input[type="date"],
+body.dark-mode input[type="datetime-local"] {
+    background-color: #343434 !important;
+    color: #e0e0e0 !important;
+    border: 1px solid #555 !important;
+}
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder { color: #b0b0b0 !important; }
+body.dark-mode input:focus,
+body.dark-mode textarea:focus,
+body.dark-mode select:focus {
+    background-color: #3a3a3a !important;
+    border-color: #666 !important;
+    outline: none !important;
+}
+
+/* Navbar & Footer */
+body.dark-mode .navbar,
+body.dark-mode footer { background-color: #5c2a2a !important; }
+body.dark-mode .navbar { border-bottom: 1px solid #3a1a1a !important; }
+body.dark-mode .navbar .navbar-brand,
+body.dark-mode .navbar .nav-link,
+body.dark-mode footer { color: #e0e0e0 !important; }
+body.dark-mode .navbar .nav-link:hover,
+body.dark-mode .navbar .navbar-brand:hover,
+body.dark-mode footer a:hover {
+    color: #ffffff !important;
+    text-decoration: underline !important;
+}
+
+/* ============================= */
+/* Danger Buttons - match Navbar color */
+/* ============================= */
+
+/* Light mode */
+body:not(.dark-mode) .btn-danger-orange {
+    background-color: #d9534f !important; /* light-mode navbar color */
+    border-color: #d9534f !important;
+    color: #fff !important;
+}
+
+body:not(.dark-mode) .btn-danger-orange:hover {
+    background-color: #b52b2b !important; /* slightly darker on hover */
+    border-color: #b52b2b !important;
+}
+
+/* Dark mode */
+body.dark-mode .btn-danger-orange {
+    background-color: #5c2a2a !important; /* dark-mode navbar/footer color */
+    border-color: #5c2a2a !important;
+    color: #fff !important;
+}
+
+body.dark-mode .btn-danger-orange:hover {
+    background-color: #3a1a1a !important; /* slightly darker on hover */
+    border-color: #3a1a1a !important;
+}
+
+/* Dark dropdowns */
+body.dark-mode .dropdown-menu,
+body.dark-mode .dropdown-menu.show {
+    background-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    border: 1px solid #555 !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    padding: 0.5rem 0;
+}
+body.dark-mode .dropdown-menu .dropdown-item {
+    color: #e0e0e0 !important;
     background-color: transparent !important;
-    border-color: rgba(255, 255, 255, 0.5) !important;
+    border-radius: 0.25rem !important;
+    padding: 0.375rem 1rem;
+}
+body.dark-mode .dropdown-menu .dropdown-item:hover,
+body.dark-mode .dropdown-menu .dropdown-item:focus {
+    background-color: #3a1a1a !important;
+    color: #fff !important;
+}
+
+/* File / Photo Inputs */
+body.dark-mode input[type="file"] {
+    background-color: #343434 !important;
+    color: #e0e0e0 !important;
+    border: 1px solid #555 !important;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.25rem;
+}
+body.dark-mode input[type="file"]::-webkit-file-upload-button {
+    background-color: #009966 !important;
+    color: #fff !important;
+    border: none !important;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+body.dark-mode input[type="file"]:hover::-webkit-file-upload-button {
+    background-color: #157347 !important;
+}
+
+/* Cards / Tasks Nested Elements */
+body.dark-mode .tasks-today,
+body.dark-mode .tasks-today *,
+body.dark-mode .card-dashboard *,
+body.dark-mode .card * {
+    background-color: inherit !important;
+    color: inherit !important;
+    border-color: inherit !important;
+}
+
+/* Buttons inside cards */
+.card button.btn,
+.card-dashboard button.btn,
+.card a.btn,
+.card-dashboard a.btn,
+.card input[type="submit"],
+.card-dashboard input[type="submit"] {
+    background-color: #009966 !important;
+    border-color: #009966 !important;
+    color: #fff !important;
+}
+.card button.btn:hover,
+.card-dashboard button.btn:hover,
+.card a.btn:hover,
+.card-dashboard a.btn:hover,
+.card input[type="submit"]:hover,
+.card-dashboard input[type="submit"]:hover {
+    background-color: #157347 !important;
+    border-color: #146c43 !important;
+}
+
+/* Dark mode select - fully visible, custom arrow, no primary highlight */
+body.dark-mode select.form-select {
+    appearance: none !important; /* remove native arrow */
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-color: #3a3a3a !important; /* slightly lighter than background */
+    color: #fff !important;
+    border: 1px solid #555 !important;
+    padding: 0.375rem 1.5rem 0.375rem 0.75rem;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='7' viewBox='0 0 12 7' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='white' stroke-width='2'/%3E%3C/svg%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 12px 7px;
+}
+body.dark-mode select.form-select:focus {
+    background-color: #454545 !important;
+    border-color: #666 !important;
+    outline: none !important;
     box-shadow: none !important;
 }
 
-.navbar-toggler .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml;charset=UTF8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%28255,255,255,1%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
-}
-
-.navbar .nav-link,
-.navbar .navbar-brand {
-    color: #f8f9fa !important;
-}
-
-.navbar .nav-link:hover,
-.navbar .navbar-brand:hover {
-    color: #ffffff !important;
-    text-decoration: underline;
-}
-
-.navbar .dropdown-menu .dropdown-item {
-    color: #6c757d !important;
-    background-color: transparent !important;
-}
-
-.navbar .dropdown-menu .dropdown-item:hover {
-    color: #6c757d !important;
-    background-color: rgba(0,0,0,0.05) !important;
-    text-decoration: underline;
-}
-
-.navbar .dropdown-menu .dropdown-item button {
-    color: #6c757d !important;
-    background: none !important;
-    border: none !important;
+/* Footer Full Width & No Margins */
+footer {
     width: 100%;
-    text-align: left;
-    padding: 0.25rem 1rem;
+    margin: 0;
+    padding: 1rem 0;
+    box-sizing: border-box;
+    text-align: center;
+    background-color: #ffdccc; /* light mode color */
+    color: #6c757d;
 }
 
-/* Force all text in search results container to secondary gray */
-.search-results,
-.search-results h5,
-.search-results strong,
-.search-results td,
-.search-results th {
-    color: #6c757d !important;
+body.dark-mode footer {
+    background-color: #5c2a2a; /* dark mode color */
+    color: #e0e0e0;
 }
 
-/* Links in search results */
-.search-results a {
-    color: #6c757d !important;
-    text-decoration: none;
+/* Navbar dropdowns — match body background, only underline on hover */
+.navbar .dropdown-menu,
+.navbar .dropdown-menu .dropdown-item {
+    background-color: var(--body-bg, #fdf6f0) !important; /* light mode default */
+    color: inherit !important;                              /* inherit text color from navbar */
+    border: none !important;
+    box-shadow: none !important;
 }
 
-.search-results a:hover {
-    text-decoration: underline;
+body.dark-mode .navbar .dropdown-menu,
+body.dark-mode .navbar .dropdown-menu .dropdown-item {
+    background-color: #1e1e1e !important; /* dark mode body background */
+    color: inherit !important;
 }
 
-/* Badges */
-.search-results .badge {
-    color: #fff !important; /* keep badge text white */
+.navbar .dropdown-menu .dropdown-item:hover,
+.navbar .dropdown-menu .dropdown-item:focus {
+    background-color: transparent !important; /* no background change */
+    color: inherit !important;
+    text-decoration: underline !important;    /* only underline */
 }
 
-@media print {
-    .list-group-item { page-break-inside: avoid; }
+/* ============================= */
+/* Navbar dropdown buttons clean */
+/* ============================= */
+.navbar .dropdown-menu .btn {
+    background-color: inherit !important; /* match dropdown background */
+    border-color: transparent !important; /* no border */
+    color: inherit !important;           /* inherit text color */
+    box-shadow: none !important;
+    padding: 0.25rem 0.5rem;             /* adjust if needed */
 }
 
-@media print {
-    body * { visibility: hidden; }
-    .report-card, .report-card * { visibility: visible; }
+.navbar .dropdown-menu .btn:hover {
+    background-color: inherit !important; /* no hover color change */
+    border-color: transparent !important;
+    color: inherit !important;
 }
 
-@media (max-width: 576px) {
-    .navbar-nav .dropdown-menu {
-        width: 90vw !important; /* almost full width on mobile */
-        left: auto !important;   /* reset Bootstrap end alignment */
-        right: 5vw !important;  /* small margin from edge */
-    }
-    #reminderBadge {
-        font-size: 0.7rem;
-        padding: 0.25em 0.35em;
-    }
+/* ============================= */
+/* Main Content Text Colors */
+/* ============================= */
+
+/* Light mode - main content text */
+body,
+.card, .card-dashboard,
+.card-body, .card-header,
+.list-group-item,
+table, .table,
+tbody td, tbody th {
+    color: #6c757d !important; /* secondary */
+}
+
+/* Dark mode - main content text */
+body.dark-mode,
+body.dark-mode .card,
+body.dark-mode .card-dashboard,
+body.dark-mode .card-body,
+body.dark-mode .card-header,
+body.dark-mode .list-group-item,
+body.dark-mode table,
+body.dark-mode .table,
+body.dark-mode tbody td,
+body.dark-mode tbody th {
+    color: #ffffff !important;
 }

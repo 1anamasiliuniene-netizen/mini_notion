@@ -21,7 +21,8 @@
     <link href="{% static 'custom.css' %}" rel="stylesheet">
 
 </head>
-<body>
+<body class="{% if request.user.is_authenticated and request.user.userprofile.theme == 'dark' %}dark-mode{% endif %}">
+
 <style>
 @media print {
     body * {
@@ -42,8 +43,9 @@
     }
 }
 </style>
+
 <!-- Hero Section -->
-<div class="hero-section w-100 py-4 mb-2" style="background-color: #007399; color: white;">
+<div class="hero-section w-100 py-4 mb-2">
     <div class="container d-flex flex-column">
         <!-- Brand on the left -->
         <h4 class="fw-bold mb-2" style="text-align: left;">&copy; mini Notion</h4>
@@ -62,7 +64,7 @@
 </div>
 
 <!-- Footer -->
-<footer class="mt-5 p-4 text-secondary text-center" style="background-color: #ffdccc;">
+<footer>
     <p>&copy; 2026 Mini Notion</p>
 </footer>
 

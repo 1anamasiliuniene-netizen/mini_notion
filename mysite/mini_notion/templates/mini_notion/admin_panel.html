@@ -1,0 +1,100 @@
+{% extends "mini_notion/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Admin Panel</h2>
+
+    <hr>
+
+    <h4>Users</h4>
+    <table class="table table-striped mb-4">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Status</th>
+            <th>Superuser</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user_obj in users %}
+        <tr>
+            <td>{{ user_obj.username }}</td>
+
+            <td>
+                {% if user_obj.is_active %}
+                    <span class="badge bg-success">Active</span>
+                {% else %}
+                    <span class="badge bg-secondary">Inactive</span>
+                {% endif %}
+            </td>
+
+            <td>
+                {% if user_obj.is_superuser %}
+                    <span class="badge bg-danger">Superuser</span>
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+
+            <td>
+                {% if user_obj != request.user %}
+                <form method="post"
+                      action="{% url 'toggle_user_active' user_obj.id %}">
+                    {% csrf_token %}
+                    {% if user_obj.is_active %}
+                        <button type="submit" class="btn btn-sm btn-warning">
+                            Deactivate
+                        </button>
+                    {% else %}
+                        <button type="submit" class="btn btn-sm btn-success">
+                            Restore
+                        </button>
+                    {% endif %}
+                </form>
+                {% else %}
+                    <span class="text-muted">Current User</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+    <h4>Project Memberships</h4>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>User</th>
+            <th>Project</th>
+            <th>Role</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for membership in memberships %}
+        <tr>
+            <td>{{ membership.user.username }}</td>
+            <td>{{ membership.project.title }}</td>
+            <td>
+                <form method="post" action="{% url 'change_role' membership.id %}">
+                    {% csrf_token %}
+                    <select name="role"
+                            class="form-select form-select-sm"
+                            onchange="this.form.submit()">
+
+                        {% for key, value in role_choices %}
+                        <option value="{{ key }}"
+                                {% if membership.role == key %}selected{% endif %}>
+                            {{ value }}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
