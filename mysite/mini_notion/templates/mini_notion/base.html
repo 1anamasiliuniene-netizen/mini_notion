@@ -22,51 +22,69 @@
 
 </head>
 <body class="{% if request.user.is_authenticated and request.user.userprofile.theme == 'dark' %}dark-mode{% endif %}">
+<div class="page-wrapper d-flex flex-column min-vh-100">
 
 <style>
 @media print {
     body * {
-        visibility: hidden; /* hide everything */
+        visibility: visible; /* show everything */
+        color-adjust: exact; /* maintain colors in print */
     }
-    .card, .card * {
-        visibility: visible; /* show report card only */
-    }
-    .card {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-    }
-    /* Optional: hide buttons or other UI elements */
+
+    /* Hide buttons */
     button, .btn {
         display: none !important;
+    }
+
+    /* Remove absolute positioning */
+    .card {
+        position: static !important;
+        width: auto !important;
+        box-shadow: none !important;
+    }
+
+    /* Avoid splitting cards, table rows, list items */
+    .card, .list-group-item, table, tr, td, th {
+        page-break-inside: avoid;
+    }
+
+    /* Ensure major sections start nicely */
+    h3, h4 {
+        page-break-after: avoid;
+        page-break-before: always;
+    }
+
+    /* Optional: force page break before tasks, comments, reminders */
+    .tasks-section,
+    .comments-section,
+    .reminders-section {
+        page-break-before: always;
     }
 }
 </style>
 
 <!-- Hero Section -->
-<div class="hero-section w-100 py-4 mb-2">
-    <div class="container d-flex flex-column">
-        <!-- Brand on the left -->
-        <h4 class="fw-bold mb-2" style="text-align: left;">&copy; mini Notion</h4>
-
-        <!-- Hero / random phrase centered, light and italic -->
-        <p class="text-center fw-light fst-italic mb-0" style="font-size: 1.25rem;">{{ hero_phrase }}</p>
+    <div class="hero-section w-100 py-4 mb-2">
+        <div class="container d-flex flex-column">
+            <h4 class="fw-bold mb-2" style="text-align: left;">&copy; mini Notion</h4>
+            <p class="text-center fw-light fst-italic mb-0" style="font-size: 1.25rem;">{{ hero_phrase }}</p>
+        </div>
     </div>
+
+    <!-- Navbar -->
+    {% include 'mini_notion/navbar.html' %}
+
+    <!-- Main Content grows -->
+    <div class="page-content flex-grow-1 container mt-4">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-auto py-3 text-center bg-light dark-mode:bg-dark">
+        <p>&copy; 2026 Mini Notion</p>
+    </footer>
+
 </div>
-
-<!-- Navbar -->
-{% include 'mini_notion/navbar.html' %}
-
-<!-- Main Content -->
-<div class="container mt-4">
-    {% block content %}{% endblock %}
-</div>
-
-<!-- Footer -->
-<footer>
-    <p>&copy; 2026 Mini Notion</p>
-</footer>
 
 </body>
 </html>

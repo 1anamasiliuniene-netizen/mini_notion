@@ -100,7 +100,7 @@
                 {% endfor %}
 
                 <!-- Add Comment Form -->
-                <form method="post" class="mt-4 p-3 border rounded bg-white task-detail-form">
+                <form method="post" class="mt-4 p-3 border rounded task-detail-form">
                     {% csrf_token %}
                     <input type="hidden" name="form_type" value="add_task_comment">
                     <div class="mb-3">
@@ -113,4 +113,5 @@
             </div>
         </div>
     </div>
+    </div> <!-- CLOSE THE OUTER CONTAINER -->
     {% endblock %}

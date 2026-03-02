@@ -1,6 +1,9 @@
 import os, json
 from datetime import date
-from .models import UserProfile, Project, Task, Comment_task
+
+from django.utils import timezone
+
+from .models import UserProfile, Task, Comment_task
 from .forms import UserProfileForm, UserForm, ProjectForm, TaskForm
 from django.core.paginator import Paginator
 from django.views.decorators.csrf import csrf_exempt
@@ -22,6 +25,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.contrib.auth.models import User
 from .models import ProjectMembership
+from datetime import date
 
 
 @login_required
@@ -40,6 +44,7 @@ def admin_panel(request):
 
     return render(request, 'mini_notion/admin_panel.html', context)
 
+
 @login_required
 def toggle_user_active(request, user_id):
     if not request.user.is_superuser:
@@ -53,6 +58,7 @@ def toggle_user_active(request, user_id):
         user.save()
 
     return redirect('admin_panel')
+
 
 @login_required
 def toggle_superuser(request, user_id):
@@ -68,6 +74,7 @@ def toggle_superuser(request, user_id):
 
     return redirect('admin_panel')
 
+
 @login_required
 def change_role(request, membership_id):
     if not request.user.is_superuser:
@@ -82,6 +89,8 @@ def change_role(request, membership_id):
             membership.save()
 
     return redirect('admin_panel')
+
+
 @login_required
 def navbar_reminders_json(request):
     today = now()
@@ -122,6 +131,7 @@ def resolve_reminder(request, reminder_id):
 
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
+
 @login_required
 def settings_view(request):
     return render(request, 'mini_notion/settings.html')
@@ -161,6 +171,7 @@ def deactivate_account(request):
         from django.contrib.auth import logout
         logout(request)
     return redirect('login')
+
 
 def dashboard(request):
     today = date.today()
@@ -272,34 +283,68 @@ def delete_reminder(request, reminder_id):
 
 
 def search_results(request):
-    query = request.GET.get('q', '')
+    query = request.GET.get('q', '').strip()
+    task_status = request.GET.get('status', '').strip()
+    due_before = request.GET.get('due_before', '').strip()
+    today = timezone.localdate()
 
     results = []
 
     if query:
-        # Find users whose username contains the query
-        users = User.objects.filter(username__icontains=query)
+        # Find users whose username, first_name, last_name, projects, or tasks match
+        users = User.objects.filter(
+            Q(username__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(projects__title__icontains=query) |
+            Q(tasks__title__icontains=query)
+        ).distinct()
 
         for user in users:
-            profile = UserProfile.objects.filter(user=user).first()
-            projects = Project.objects.filter(owner=user)
-            tasks = Task.objects.filter(assigned_to=user)
+            projects_with_tasks = []
 
-            results.append({
-                'user': user,
-                'profile': profile,
-                'projects': projects if projects.exists() else None,
-                'tasks': tasks if tasks.exists() else None,
-            })
+            # User's projects
+            user_projects = user.projects.all()
+
+            for project in user_projects:
+                # All tasks in the project
+                tasks = project.tasks.all()
+
+                # Filter tasks by query
+                filtered_tasks = tasks.filter(title__icontains=query)
+
+                # Apply task filters
+                if task_status:
+                    filtered_tasks = filtered_tasks.filter(status=task_status)
+                if due_before:
+                    filtered_tasks = filtered_tasks.filter(due_date__lte=due_before)
+
+                # Include project if:
+                # - Project title matches query OR
+                # - Any filtered tasks exist
+                if query.lower() in project.title.lower() or filtered_tasks.exists():
+                    projects_with_tasks.append({
+                        'project': project,
+                        'tasks': filtered_tasks,  # could be empty
+                    })
+
+            # Only add user if they have projects to show
+            if projects_with_tasks or query.lower() in user.username.lower() \
+               or query.lower() in user.first_name.lower() \
+               or query.lower() in user.last_name.lower():
+                results.append({
+                    'user': user,
+                    'projects_with_tasks': projects_with_tasks,
+                })
 
     context = {
         'query': query,
         'results': results,
-        'today': date.today(),
+        'task_status': task_status,
+        'due_before': due_before,
+        'today': today,
     }
-
     return render(request, 'mini_notion/search_results.html', context)
-
 
 # Authentication Views
 def signup_view(request):
@@ -402,6 +447,7 @@ def archive_project(request, pk):
 
     return redirect('projects_list', project_type=project.project_type)
 
+
 @login_required
 def recover_project(request, pk):
     project = get_object_or_404(Project, pk=pk, owner=request.user)
@@ -413,6 +459,7 @@ def recover_project(request, pk):
 
     # Redirect to the active projects list of the correct type
     return redirect('projects_list', project_type=project.project_type)
+
 
 @login_required
 def project_detail(request, pk):
@@ -428,7 +475,7 @@ def project_detail(request, pk):
             task_id = request.POST.get('task_id')
             completed = request.POST.get('completed') == 'on'
             try:
-                task = Task.objects.get(id=task_id, project=project)
+                task = Task.objects.get(pk=task_id, project=project)
                 task.status = 'Completed' if completed else 'In Progress'
                 task.save()
                 messages.success(request, f'Task "{task.title}" status updated!')
@@ -576,8 +623,8 @@ def update_task(request, task_id):
 
 
 @login_required
-def task_detail(request, pk):
-    task = get_object_or_404(Task, pk=pk)
+def task_detail(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
 
     if request.method == 'POST':
         form_type = request.POST.get('form_type', "")
