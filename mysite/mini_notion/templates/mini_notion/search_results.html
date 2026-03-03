@@ -63,17 +63,17 @@
                 </a>
             </td>
             <td>
-                {% if task.status == "Completed" %}
+                {% if task.status == "done" %}
                 <span class="badge bg-success">Done</span>
-                {% elif task.status == "In Progress" %}
-                In Progress
+                {% elif task.status == "in_progress" %}
+                <span class="badge bg-info">In Progress</span>
                 {% else %}
-                To Do
+                <span class="badge bg-warning">To Do</span>
                 {% endif %}
             </td>
             <td>
                 {% if task.due_date %}
-                {% if task.due_date < today %}
+                {% if task.is_overdue %}
                 <span class="badge bg-danger">{{ task.due_date|date:"M. d, Y" }} (Overdue)</span>
                 {% else %}
                 {{ task.due_date|date:"M. d, Y" }}

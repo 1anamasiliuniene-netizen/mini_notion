@@ -148,22 +148,6 @@ a.btn:hover {
 }
 
 /* ============================= */
-/* Navbar Main Links */
-/* ============================= */
-.navbar .nav-link,
-.navbar .navbar-brand,
-.navbar .btn.dropdown-toggle {
-    color: #ffffff !important;
-    text-decoration: none !important;
-}
-.navbar .nav-link:hover,
-.navbar .navbar-brand:hover,
-.navbar .btn.dropdown-toggle:hover {
-    text-decoration: underline !important;
-    color: #ffffff !important;
-}
-
-/* ============================= */
 /* Navbar Dropdown Items (Light Mode) */
 /* ============================= */
 .navbar .dropdown-menu,
@@ -387,53 +371,41 @@ body.dark-mode tbody tr:hover {
     background-color: #3a3a3a !important;
 }
 
-/* Dark mode adjustments */
-body.dark-mode {
-    /* Dark container behind images and file inputs */
-    .dark-photo-container,
-    .dark-file-container {
-        background-color: #3a3a3a;
-    }
-
-    /* Make file input background dark too */
-    .dark-file-container input[type="file"] {
-        background-color: #3a3a3a;
-        color: #f0f0f0;
-        border: 1px solid #555;
-        border-radius: 0.25rem;
-        padding: 0.25rem 0.5rem;
-    }
-
-    /* Optional: ensure text in file input is visible */
-    .dark-file-container input[type="file"]::file-selector-button {
-        background-color: #555;
-        color: #f0f0f0;
-        border: none;
-        border-radius: 0.25rem;
-        padding: 0.25rem 0.5rem;
-        cursor: pointer;
-    }
-
-    /* Optional: textareas and other form controls */
-    body.dark-mode .form-control {
-        background-color: #3a3a3a;
-        color: #f0f0f0;
-        border-color: #555;
-    }
+/* ============================= */
+/* Dark Mode File Input & Photo */
+/* ============================= */
+body.dark-mode .dark-photo-container,
+body.dark-mode .dark-file-container {
+    background-color: #3a3a3a;
 }
 
-/* custom.css */
+body.dark-mode .dark-file-container input[type="file"] {
+    background-color: #3a3a3a;
+    color: #f0f0f0;
+    border: 1px solid #555;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+}
+
+body.dark-mode .dark-file-container input[type="file"]::file-selector-button {
+    background-color: #555;
+    color: #f0f0f0;
+    border: none;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+}
+
 body.dark-mode .form-control,
 body.dark-mode .form-control-file,
 body.dark-mode .form-select,
 body.dark-mode input[type="file"] {
-    background-color: #3a3a3a !important; /* dark grey */
-    color: #f0f0f0 !important;            /* light text */
-    border: 1px solid #555 !important;    /* subtle border */
+    background-color: #3a3a3a !important;
+    color: #f0f0f0 !important;
+    border: 1px solid #555 !important;
     border-radius: 0.25rem !important;
 }
 
-/* Make the file selector button dark too */
 body.dark-mode input[type="file"]::file-selector-button {
     background-color: #555 !important;
     color: #f0f0f0 !important;
@@ -443,18 +415,15 @@ body.dark-mode input[type="file"]::file-selector-button {
     cursor: pointer;
 }
 
-/* Optional: preview image background */
 body.dark-mode img.rounded-circle {
     background-color: #3a3a3a;
     padding: 2px;
 }
 
-/* Dark mode calendar icon */
 body.dark-mode input[type="date"]::-webkit-calendar-picker-indicator {
     filter: invert(1) grayscale(100%) brightness(1.2);
 }
 
-/* Optional: make the background darker too */
 body.dark-mode input[type="date"] {
     background-color: #2b2b2b;
     color: #f0f0f0;

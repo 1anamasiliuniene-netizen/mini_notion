@@ -226,7 +226,7 @@ def resolve_reminder(request, reminder_id):
         Reminder,
         id=reminder_id,
         project__in=Project.objects.filter(
-            Q(owner=request.user) | Q(shared_with=request.user)
+            Q(owner=request.user) | Q(members=request.user)
         )
     )
 
@@ -412,27 +412,38 @@ def search_results(request):
                 # Fetch all tasks in the project
                 tasks_qs = Task.objects.filter(project=project)
 
-                # Filter tasks by query text
-                filtered_tasks = tasks_qs.filter(title__icontains=query)
+                # Start with all tasks in the project
+                tasks_to_filter = tasks_qs
+
+                # Apply query filter to task title
+                filtered_tasks = tasks_to_filter.filter(title__icontains=query)
 
                 # Apply task status filter if specified
                 if task_status:
                     filtered_tasks = filtered_tasks.filter(status=task_status)
+
+                # Apply due date filter if specified
                 if due_before:
                     filtered_tasks = filtered_tasks.filter(due_date__lte=due_before)
 
-                # Annotate for template
-                for t in filtered_tasks:
-                    t.completed = t.status == 'Completed'
-                    t.is_overdue = t.due_date and t.status != 'Completed' and t.due_date < today
-
+                # If project title matches query, include ALL tasks from the project (but still apply status/date filters)
                 if query.lower() in project.title.lower():
-                    tasks_to_show = tasks_qs  # show all tasks for this project
-                    for t in tasks_to_show:
-                        t.completed = t.status == 'Completed'
-                        t.is_overdue = t.due_date and t.status != 'Completed' and t.due_date < today
+                    # When project matches, show all tasks but apply status and due_date filters
+                    all_project_tasks = tasks_to_filter
+                    if task_status:
+                        all_project_tasks = all_project_tasks.filter(status=task_status)
+                    if due_before:
+                        all_project_tasks = all_project_tasks.filter(due_date__lte=due_before)
+                    # Combine: tasks that match query title + all tasks if project title matches
+                    tasks_to_show = filtered_tasks | all_project_tasks
+                    tasks_to_show = tasks_to_show.distinct()
                 else:
                     tasks_to_show = filtered_tasks
+
+                # Annotate for template with correct status values
+                for t in tasks_to_show:
+                    t.completed = t.status == 'done'
+                    t.is_overdue = t.due_date and t.status != 'done' and t.due_date < today
 
                 if tasks_to_show.exists():
                     projects_with_tasks.append({
@@ -441,9 +452,7 @@ def search_results(request):
                     })
 
             # Only add user if they have projects with matching tasks
-            if projects_with_tasks or query.lower() in user.username.lower() \
-                    or query.lower() in user.first_name.lower() \
-                    or query.lower() in user.last_name.lower():
+            if projects_with_tasks:
                 results.append({
                     'user': user,
                     'projects_with_tasks': projects_with_tasks,
