@@ -1,31 +1,117 @@
-import os, json
+import os
+import json
 from datetime import date
-
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseBadRequest, Http404, JsonResponse, HttpResponseForbidden
 from django.utils import timezone
-
-from .models import UserProfile, Task, Comment_task
-from .forms import UserProfileForm, UserForm, ProjectForm, TaskForm
+from django.utils.timezone import now
 from django.core.paginator import Paginator
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render, redirect
-from django.http import HttpResponseBadRequest, Http404
+from django.views.decorators.http import require_POST
+from django.db.models import DateField, Q, Count
+from django.db.models.functions import Cast
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.db.models import DateField
-from django.db.models.functions import Cast
-from django.utils.timezone import now
-from .models import Reminder, Project
-from django.views.decorators.http import require_POST
-from django.shortcuts import get_object_or_404
-from django.db.models import Q
-from django.http import JsonResponse
-from django.middleware.csrf import get_token
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
 from django.contrib.auth.models import User
-from .models import ProjectMembership
-from datetime import date
+from django.middleware.csrf import get_token
+
+from .models import (
+    UserProfile,
+    Task,
+    Comment_task,
+    Reminder,
+    Project,
+    ProjectMembership
+)
+from .forms import UserProfileForm, UserForm, ProjectForm, TaskForm
+from .services.analytics import user_dashboard, pm_dashboard, admin_dashboard, project_analytics
+
+
+def dashboard_view(request):
+    today = date.today()
+    selected_date_str = request.GET.get('date')
+    try:
+        selected_date = date.fromisoformat(selected_date_str) if selected_date_str else today
+    except ValueError:
+        selected_date = today
+
+    # --- Birthdays today ---
+    birthdays = UserProfile.objects.filter(
+        date_of_birth__month=today.month,
+        date_of_birth__day=today.day
+    ).exclude(user=request.user) if request.user.is_authenticated else UserProfile.objects.filter(
+        date_of_birth__month=today.month,
+        date_of_birth__day=today.day
+    )
+
+    # --- Shared Projects ---
+    shared_projects_qs = Project.objects.filter(
+        tasks__assigned_to__isnull=False
+    ).distinct().order_by('-created_at')
+    # Show all shared projects for everyone
+    shared_projects = list(shared_projects_qs)
+
+    # === Tasks (only for logged-in users) ===
+    tasks = []
+    if request.user.is_authenticated:
+        # Handle checkbox POST for tasks
+        if request.method == 'POST' and request.POST.get('form_type') == 'update_task_status':
+            task_id = request.POST.get('task_id')
+            try:
+                task = Task.objects.get(id=task_id)
+                if task.assigned_to == request.user:
+                    task.status = 'Completed'
+                    task.save()
+            except Task.DoesNotExist:
+                pass
+            return redirect(f"{request.path}?date={selected_date}")
+
+        # Load only incomplete tasks
+        tasks = Task.objects.filter(
+            assigned_to=request.user,
+            status__in=['Pending', 'In Progress'],
+            due_date=selected_date
+        ).order_by('due_date')
+
+        for task in tasks:
+            task.completed = False
+            task.is_overdue = task.due_date and task.due_date < today
+
+    # --- Analytics ---
+    analytics = {
+        'total_users': User.objects.count(),
+        'total_projects': Project.objects.count(),
+        'tasks_completed': Task.objects.filter(status='Completed').count(),
+        'tasks_overdue': Task.objects.filter(status__in=['Pending', 'In Progress'], due_date__lt=today).count(),
+    }
+
+    # --- All users stats ---
+    all_users = []
+    for u in User.objects.all():
+        tasks_assigned = Task.objects.filter(assigned_to=u).count()
+        overdue_tasks = Task.objects.filter(assigned_to=u, status__in=['Pending', 'In Progress'],
+                                            due_date__lt=today).count()
+        all_users.append({
+            'username': u.username,
+            'tasks_assigned': tasks_assigned,
+            'overdue_tasks': overdue_tasks,
+        })
+
+    context = {
+        'birthdays': birthdays,
+        'shared_projects': shared_projects,
+        'tasks': tasks,
+        'today': today,
+        'selected_date': selected_date,
+        'analytics': analytics,
+        'all_users': all_users,
+        'system_role': getattr(getattr(request.user, 'userprofile', None), 'system_role',
+                               'guest') if request.user.is_authenticated else 'guest',
+    }
+
+    return render(request, 'mini_notion/dashboard.html', context)
 
 
 @login_required
@@ -89,6 +175,24 @@ def change_role(request, membership_id):
             membership.save()
 
     return redirect('admin_panel')
+
+
+@login_required
+def role_dashboard(request):
+    profile = request.user.userprofile
+    system_role = profile.system_role
+
+    if system_role == "admin":
+        analytics = admin_dashboard()
+    elif system_role == "pm":
+        analytics = pm_dashboard(request.user)
+    else:
+        analytics = user_dashboard(request.user)
+
+    return render(request, "mini_notion/dashboard.html", {
+        "analytics": analytics,
+        "system_role": system_role,
+    })
 
 
 @login_required
@@ -173,71 +277,68 @@ def deactivate_account(request):
     return redirect('login')
 
 
+@login_required
 def dashboard(request):
     today = date.today()
-
-    # Selected date (from query param ?date=YYYY-MM-DD), default to today
     selected_date_str = request.GET.get('date')
-    if selected_date_str:
-        try:
-            selected_date = date.fromisoformat(selected_date_str)
-        except ValueError:
-            selected_date = today
-    else:
+    try:
+        selected_date = date.fromisoformat(selected_date_str) if selected_date_str else today
+    except ValueError:
         selected_date = today
 
-    # Birthdays
+    # === Birthdays (exclude current user optionally) ===
     birthdays = UserProfile.objects.filter(
         date_of_birth__month=today.month,
         date_of_birth__day=today.day
-    )
+    ).exclude(user=request.user)
 
-    # Public shared projects
+    # === Shared projects ===
     shared_projects_qs = Project.objects.filter(
         tasks__assigned_to__isnull=False
-    ).exclude(owner=None).distinct().order_by('-created_at')
+    ).distinct().order_by('-created_at')
 
-    shared_projects = []
-    for project in shared_projects_qs:
-        if request.user.is_authenticated:
-            if project.owner == request.user or project.tasks.filter(assigned_to=request.user).exists():
-                shared_projects.append(project)
-        else:
-            shared_projects.append(project)
+    shared_projects = [
+        p for p in shared_projects_qs
+        if p.owner == request.user or p.tasks.filter(assigned_to=request.user).exists()
+    ]
 
-    # Handle task deletion if POST
-    if request.POST.get('form_type') == 'update_task_status':
-        task_id = request.POST.get('task_id')
-        completed = request.POST.get('completed') == 'on'
-
-        try:
-            task = Task.objects.get(id=task_id, assigned_to=request.user)
-            task.status = 'Completed' if completed else 'In Progress'
-            task.save()
-            messages.success(request, f'Task "{task.title}" status updated!')
-        except Task.DoesNotExist:
-            messages.error(request, "Task not found.")
-
-        return redirect('dashboard')
-
-    # Tasks only for authenticated users
+    # === Tasks for selected date ===
     if request.user.is_authenticated:
-        todo_tasks = Task.objects.annotate(
+        tasks = Task.objects.annotate(
             due_date_only=Cast('due_date', DateField())
         ).filter(
             assigned_to=request.user,
             due_date_only=selected_date
-        ).exclude(status='Completed').order_by('due_date')
-    else:
-        todo_tasks = []
+        ).order_by('due_date')
 
-    return render(request, 'mini_notion/dashboard.html', {
+        # Annotate tasks for template convenience
+        for task in tasks:
+            task.completed = task.status == 'Completed'
+            task.is_overdue = task.due_date and task.status != 'Completed' and task.due_date < today
+    else:
+        tasks = []
+
+    # === Role & Analytics ===
+    profile = request.user.userprofile
+    system_role = profile.system_role
+    if system_role == 'admin':
+        analytics = admin_dashboard()
+    elif system_role == 'pm':
+        analytics = pm_dashboard(request.user)
+    else:
+        analytics = user_dashboard(request.user)
+
+    context = {
         'birthdays': birthdays,
         'shared_projects': shared_projects,
-        'tasks': todo_tasks,
+        'tasks': tasks,
         'today': today,
         'selected_date': selected_date,
-    })
+        'system_role': system_role,
+        'analytics': analytics,
+    }
+
+    return render(request, 'mini_notion/dashboard.html', context)
 
 
 def shared_project_detail(request, pk):
@@ -291,47 +392,58 @@ def search_results(request):
     results = []
 
     if query:
-        # Find users whose username, first_name, last_name, projects, or tasks match
+        # Find users whose username, first_name, last_name, or projects/tasks match
         users = User.objects.filter(
             Q(username__icontains=query) |
             Q(first_name__icontains=query) |
             Q(last_name__icontains=query) |
-            Q(projects__title__icontains=query) |
+            Q(owned_projects__title__icontains=query) |
+            Q(member_projects__title__icontains=query) |
             Q(tasks__title__icontains=query)
         ).distinct()
 
         for user in users:
             projects_with_tasks = []
 
-            # User's projects
-            user_projects = user.projects.all()
+            # Combine owned and member projects
+            user_projects = list(user.owned_projects.all()) + list(user.member_projects.all())
 
             for project in user_projects:
-                # All tasks in the project
-                tasks = project.tasks.all()
+                # Fetch all tasks in the project
+                tasks_qs = Task.objects.filter(project=project)
 
-                # Filter tasks by query
-                filtered_tasks = tasks.filter(title__icontains=query)
+                # Filter tasks by query text
+                filtered_tasks = tasks_qs.filter(title__icontains=query)
 
-                # Apply task filters
+                # Apply task status filter if specified
                 if task_status:
                     filtered_tasks = filtered_tasks.filter(status=task_status)
                 if due_before:
                     filtered_tasks = filtered_tasks.filter(due_date__lte=due_before)
 
-                # Include project if:
-                # - Project title matches query OR
-                # - Any filtered tasks exist
-                if query.lower() in project.title.lower() or filtered_tasks.exists():
+                # Annotate for template
+                for t in filtered_tasks:
+                    t.completed = t.status == 'Completed'
+                    t.is_overdue = t.due_date and t.status != 'Completed' and t.due_date < today
+
+                if query.lower() in project.title.lower():
+                    tasks_to_show = tasks_qs  # show all tasks for this project
+                    for t in tasks_to_show:
+                        t.completed = t.status == 'Completed'
+                        t.is_overdue = t.due_date and t.status != 'Completed' and t.due_date < today
+                else:
+                    tasks_to_show = filtered_tasks
+
+                if tasks_to_show.exists():
                     projects_with_tasks.append({
                         'project': project,
-                        'tasks': filtered_tasks,  # could be empty
+                        'tasks': tasks_to_show,
                     })
 
-            # Only add user if they have projects to show
+            # Only add user if they have projects with matching tasks
             if projects_with_tasks or query.lower() in user.username.lower() \
-               or query.lower() in user.first_name.lower() \
-               or query.lower() in user.last_name.lower():
+                    or query.lower() in user.first_name.lower() \
+                    or query.lower() in user.last_name.lower():
                 results.append({
                     'user': user,
                     'projects_with_tasks': projects_with_tasks,
@@ -345,17 +457,6 @@ def search_results(request):
         'today': today,
     }
     return render(request, 'mini_notion/search_results.html', context)
-
-# Authentication Views
-def signup_view(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            return redirect('login')
-    else:
-        form = UserCreationForm()
-    return render(request, 'mini_notion/signup.html', {'form': form})
 
 
 @login_required
@@ -687,4 +788,14 @@ def delete_task(request, pk):
 
     return redirect('project_detail', pk=project.id)
 
-# password reset views using Django's built-in views
+
+def signup_view(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('dashboard')
+    else:
+        form = UserCreationForm()
+    return render(request, 'mini_notion/signup.html', {'form': form})

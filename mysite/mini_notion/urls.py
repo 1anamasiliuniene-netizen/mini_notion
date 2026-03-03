@@ -1,10 +1,13 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+from .views import dashboard_view
+from django.shortcuts import redirect
 
 urlpatterns = [
     # Dashboard
-    path('', views.dashboard, name='dashboard'),
+    path('', lambda request: redirect('dashboard'), name='home'),
+    path('dashboard/', dashboard_view, name='dashboard'),
 
     # Admin Panel
     path('admin-panel/', views.admin_panel, name='admin_panel'),

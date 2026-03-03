@@ -45,75 +45,75 @@
         </thead>
         <tbody>
         {% if results %}
-            {% for result in results %}
-                {% if result.projects_with_tasks %}
-                    {% for project_info in result.projects_with_tasks %}
-                        {% if project_info.tasks %}
-                            {% for task in project_info.tasks %}
-                            <tr>
-                                <td>{{ result.user.username|highlight:query|safe }}</td>
-                                <td>
-                                    <a href="{% url 'project_detail' project_info.project.id %}">
-                                        {{ project_info.project.title|highlight:query|safe }}
-                                    </a>
-                                </td>
-                                <td>
-                                    <a href="{% url 'task_detail' task.id %}">
-                                        {{ task.title|highlight:query|safe }}
-                                    </a>
-                                </td>
-                                <td>
-                                    {% if task.status == "done" %}
-                                        <span class="badge bg-success">Done</span>
-                                    {% elif task.status == "in_progress" %}
-                                        <span class="badge bg-warning text-dark">In Progress</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">To Do</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if task.due_date %}
-                                        {% if task.due_date < today %}
-                                            <span class="badge bg-danger">{{ task.due_date|date:"M. d, Y" }} (Overdue)</span>
-                                        {% else %}
-                                            {{ task.due_date|date:"M. d, Y" }}
-                                        {% endif %}
-                                    {% else %}
-                                        <span class="text-secondary">No due date</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
-                            <!-- Show project even if it has no matching tasks -->
-                            <tr>
-                                <td>{{ result.user.username|highlight:query|safe }}</td>
-                                <td>
-                                    <a href="{% url 'project_detail' project_info.project.id %}">
-                                        {{ project_info.project.title|highlight:query|safe }}
-                                    </a>
-                                </td>
-                                <td class="text-secondary">No tasks matching query</td>
-                                <td>-</td>
-                                <td>-</td>
-                            </tr>
-                        {% endif %}
-                    {% endfor %}
+        {% for result in results %}
+        {% if result.projects_with_tasks %}
+        {% for project_info in result.projects_with_tasks %}
+        {% if project_info.tasks %}
+        {% for task in project_info.tasks %}
+        <tr>
+            <td>{{ result.user.username|highlight:query|safe }}</td>
+            <td>
+                <a href="{% url 'project_detail' project_info.project.id %}">
+                    {{ project_info.project.title|highlight:query|safe }}
+                </a>
+            </td>
+            <td>
+                <a href="{% url 'task_detail' task.id %}">
+                    {{ task.title|highlight:query|safe }}
+                </a>
+            </td>
+            <td>
+                {% if task.status == "Completed" %}
+                <span class="badge bg-success">Done</span>
+                {% elif task.status == "In Progress" %}
+                In Progress
                 {% else %}
-                    <!-- User without matching projects -->
-                    <tr>
-                        <td>{{ result.user.username|highlight:query|safe }}</td>
-                        <td class="text-secondary">No projects matching query</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                    </tr>
+                To Do
                 {% endif %}
-            {% endfor %}
+            </td>
+            <td>
+                {% if task.due_date %}
+                {% if task.due_date < today %}
+                <span class="badge bg-danger">{{ task.due_date|date:"M. d, Y" }} (Overdue)</span>
+                {% else %}
+                {{ task.due_date|date:"M. d, Y" }}
+                {% endif %}
+                {% else %}
+                <span class="text-secondary">No due date</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
         {% else %}
-            <tr>
-                <td colspan="5" class="text-center text-secondary">No results found.</td>
-            </tr>
+        <!-- Show project even if it has no matching tasks -->
+        <tr>
+            <td>{{ result.user.username|highlight:query|safe }}</td>
+            <td>
+                <a href="{% url 'project_detail' project_info.project.id %}">
+                    {{ project_info.project.title|highlight:query|safe }}
+                </a>
+            </td>
+            <td class="text-secondary">No tasks matching query</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        {% else %}
+        <!-- User without matching projects -->
+        <tr>
+            <td>{{ result.user.username|highlight:query|safe }}</td>
+            <td class="text-secondary">No projects matching query</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="5" class="text-center text-secondary">No results found.</td>
+        </tr>
         {% endif %}
         </tbody>
     </table>

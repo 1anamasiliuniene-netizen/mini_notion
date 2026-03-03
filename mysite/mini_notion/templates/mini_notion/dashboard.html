@@ -7,46 +7,68 @@
 <div class="container mt-5">
     <div class="row g-4">
 
-        <!-- Left Column: Birthdays + Shared Projects -->
-        <div class="col-lg-8">
+        <!-- Left Column: Statistics + Shared Projects -->
+        <div class="col-lg-8 d-flex flex-column">
 
-            <!-- Birthdays Today -->
-            <div class="card card-dashboard mb-4">
+            <!-- Analytics / Statistics -->
+            <div class="card card-dashboard mb-4 flex-grow-0">
                 <div class="card-body">
                     <h4 class="mb-4 d-flex align-items-center">
-                        <i class="bi bi-balloon-heart me-2"></i>
-                        Birthdays Today
+                        <i class="bi bi-bar-chart-line me-2"></i> Statistics
                     </h4>
-                    {% if birthdays %}
-                    <div class="row g-3">
-                        {% for user_profile in birthdays %}
-                        <div class="col-4">
-                            <div class="card card-dashboard p-3 {% if forloop.counter == 2 %}card-pastel{% endif %}">
-                                {% if user_profile.photo %}
-                                <img src="{{ user_profile.photo.url }}" class="rounded-circle mb-2" width="60"
-                                     height="60" alt="Profile">
-                                {% else %}
-                                <img src="{% static 'default_profile.png' %}" class="rounded-circle mb-2" width="60"
-                                     height="60" alt="Profile">
-                                {% endif %}
-                                <h6 class="mb-1">{{ user_profile.user.username }}</h6>
-                                <p class="mb-0"><b>Happy Birthday!</b></p>
-                            </div>
-                        </div>
-                        {% endfor %}
+
+                    <div class="row g-3 mb-4 text-center">
+                        <div class="col-3"><div class="card p-3"><h5>{{ analytics.total_users }}</h5><small>Users</small></div></div>
+                        <div class="col-3"><div class="card p-3"><h5>{{ analytics.total_projects }}</h5><small>Projects</small></div></div>
+                        <div class="col-3"><div class="card p-3"><h5>{{ analytics.tasks_completed }}</h5><small>Completed</small></div></div>
+                        <div class="col-3"><div class="card p-3"><h5>{{ analytics.tasks_overdue }}</h5><small>Overdue</small></div></div>
                     </div>
-                    {% else %}
-                    <p class="text-secondary">No birthdays today.</p>
-                    {% endif %}
+
+                    <div style="height:300px;">
+                        <canvas id="dashboardChart"></canvas>
+                    </div>
+
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <script>
+                        var ctx = document.getElementById('dashboardChart').getContext('2d');
+                        var chart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: ['Users','Projects','Completed Tasks','Overdue Tasks'],
+                                datasets: [{
+                                    label: 'Statistics',
+                                    data: [
+                                        {{ analytics.total_users }},
+                                        {{ analytics.total_projects }},
+                                        {{ analytics.tasks_completed }},
+                                        {{ analytics.tasks_overdue }}
+                                    ],
+                                    backgroundColor: [
+                                        'rgba(80, 69, 75, 0.34)',
+                                        'rgba(238, 118, 46, 0.34)',
+                                        'rgba(66, 124, 172, 0.89)',
+                                        'rgba(215, 99, 16, 0.89)'
+                                    ],
+                                    borderColor: [
+                                        'rgba(80, 69, 75, 0.34)',
+                                        'rgba(238, 118, 46, 0.34)',
+                                        'rgba(66, 124, 172, 0.89)',
+                                        'rgba(215, 99, 16, 0.89)'
+                                    ],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{enabled:true}}, scales:{y:{beginAtZero:true, precision:0}} }
+                        });
+                    </script>
                 </div>
             </div>
 
             <!-- Shared Projects -->
-            <div class="card card-dashboard">
+            <div class="card card-dashboard flex-grow-1 overflow-auto">
                 <div class="card-body">
                     <h4 class="mb-4 d-flex align-items-center">
-                        <i class="bi bi-share me-2"></i>
-                        Shared Projects
+                        <i class="bi bi-share me-2"></i> Shared Projects
                     </h4>
                     {% if shared_projects %}
                     <div class="row g-3">
@@ -64,31 +86,27 @@
                     {% endif %}
                 </div>
             </div>
-        </div>
 
-        <!-- Right Column: Tasks -->
-<div class="col-lg-4 d-flex flex-column">
-    <div class="card card-dashboard flex-grow-1">
+        </div> <!-- end left column -->
 
-        <!-- Card Header -->
-        <div class="card-header">Tasks for {{ selected_date|date:"M d, Y" }}</div>
+        <!-- Right Column: Birthdays + Tasks + Users -->
+        <div class="col-lg-4 d-flex flex-column">
 
-        <!-- Card Body -->
-        <div class="card-body">
+            <!-- Tasks: only for logged-in users -->
+            {% if request.user.is_authenticated %}
+            <div class="card card-dashboard mb-4 flex-grow-0">
+                <div class="card-header">Tasks for {{ selected_date|date:"M d, Y" }}</div>
+                <div class="card-body">
+                    <form method="get" class="mb-3">
+                        <label for="task-date" class="form-label">Select date:</label>
+                        <input type="date" id="task-date" name="date" value="{{ selected_date|date:'Y-m-d' }}"
+                               class="form-control" onchange="this.form.submit()">
+                    </form>
 
-            <!-- Date Picker inside the card, full width of the card only -->
-            <form method="get" class="mb-3">
-                <label for="task-date" class="form-label">Select date:</label>
-                <input type="date" id="task-date" name="date" value="{{ selected_date|date:'Y-m-d' }}" class="form-control" onchange="this.form.submit()">
-            </form>
-
-            {% if user.is_authenticated %}
-                {% if tasks %}
+                    {% if tasks %}
                     <ul class="list-group mb-0">
                         {% for task in tasks %}
                         <li class="list-group-item d-flex align-items-center justify-content-between py-2">
-
-                            <!-- Left: Checkbox + Task Title -->
                             <form method="post" class="d-flex align-items-center flex-grow-1 mb-0">
                                 {% csrf_token %}
                                 <input type="hidden" name="form_type" value="update_task_status">
@@ -97,30 +115,70 @@
                                     <input class="form-check-input" type="checkbox" name="completed"
                                            onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
                                 </div>
-                                <a href="{% url 'task_detail' task.id %}" class="text-decoration-none">
+                                <a href="{% url 'task_detail' task.id %}" class="text-decoration-none {% if task.is_overdue %}text-danger{% endif %}">
                                     {{ task.title }}
                                 </a>
                             </form>
-
-                            <!-- Right: Overdue Badge -->
                             <div class="ms-2 text-end">
-                                {% if task.due_date and task.due_date < today %}
-                                    <span class="badge bg-secondary">Overdue: {{ task.due_date }}</span>
+                                {% if task.is_overdue %}
+                                <span class="badge bg-danger">Overdue: {{ task.due_date }}</span>
                                 {% endif %}
                             </div>
-
                         </li>
                         {% endfor %}
                     </ul>
-                {% else %}
+                    {% else %}
                     <p class="text-secondary mb-0">No tasks yet.</p>
-                {% endif %}
-            {% else %}
-                <a class="nav-link text-white" href="{% url 'login' %}">Login to see your tasks</a>
+                    {% endif %}
+                </div>
+            </div>
             {% endif %}
-        </div> <!-- end card-body -->
-    </div> <!-- end card -->
-</div> <!-- end right column col-lg-4 -->
+
+            <!-- Birthdays -->
+            <div class="card card-dashboard mb-4 flex-grow-0">
+                <div class="card-body">
+                    <h4 class="mb-4 d-flex align-items-center">
+                        <i class="bi bi-balloon-heart me-2"></i> Birthdays Today
+                    </h4>
+                    {% if birthdays %}
+                    <div class="row g-3">
+                        {% for user_profile in birthdays %}
+                        <div class="col-6">
+                            <div class="card card-dashboard p-3">
+                                <img src="{% if user_profile.photo %}{{ user_profile.photo.url }}{% else %}{% static 'default_profile.png' %}{% endif %}"
+                                     class="rounded-circle mb-2" width="50" height="50" alt="Profile">
+                                <b>{{ user_profile.user.username }}</b> — Happy Birthday!
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-secondary mb-0">No birthdays today.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- All Users -->
+            <div class="card card-dashboard flex-grow-1 overflow-auto">
+                <div class="card-body">
+                    <h4 class="mb-4">All Users</h4>
+                    <ul class="list-group">
+                        {% for u in all_users %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ u.username }}
+                            <span>
+                                Tasks: {{ u.tasks_assigned }}
+                                {% if u.overdue_tasks > 0 %}
+                                <span class="badge bg-danger">{{ u.overdue_tasks }} overdue</span>
+                                {% endif %}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+        </div> <!-- end right column -->
 
     </div> <!-- end row -->
 </div> <!-- end container -->
