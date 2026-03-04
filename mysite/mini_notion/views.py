@@ -408,37 +408,37 @@ def search_results(request):
             # Combine owned and member projects
             user_projects = list(user.owned_projects.all()) + list(user.member_projects.all())
 
+            # Check if user matched by username/name or by project/task
+            user_matched_by_name = (
+                query.lower() in user.username.lower() or
+                query.lower() in user.first_name.lower() or
+                query.lower() in user.last_name.lower()
+            )
+
             for project in user_projects:
                 # Fetch all tasks in the project
                 tasks_qs = Task.objects.filter(project=project)
 
-                # Start with all tasks in the project
-                tasks_to_filter = tasks_qs
+                # Determine which tasks to show
+                project_title_matches = query.lower() in project.title.lower()
 
-                # Apply query filter to task title
-                filtered_tasks = tasks_to_filter.filter(title__icontains=query)
+                if user_matched_by_name:
+                    # If user matched by name, show ALL tasks in ALL their projects (apply filters only)
+                    tasks_to_show = tasks_qs
+                elif project_title_matches:
+                    # If project title matches, show all tasks in that project (apply filters only)
+                    tasks_to_show = tasks_qs
+                else:
+                    # Otherwise, only show tasks that match the query title
+                    tasks_to_show = tasks_qs.filter(title__icontains=query)
 
                 # Apply task status filter if specified
                 if task_status:
-                    filtered_tasks = filtered_tasks.filter(status=task_status)
+                    tasks_to_show = tasks_to_show.filter(status=task_status)
 
                 # Apply due date filter if specified
                 if due_before:
-                    filtered_tasks = filtered_tasks.filter(due_date__lte=due_before)
-
-                # If project title matches query, include ALL tasks from the project (but still apply status/date filters)
-                if query.lower() in project.title.lower():
-                    # When project matches, show all tasks but apply status and due_date filters
-                    all_project_tasks = tasks_to_filter
-                    if task_status:
-                        all_project_tasks = all_project_tasks.filter(status=task_status)
-                    if due_before:
-                        all_project_tasks = all_project_tasks.filter(due_date__lte=due_before)
-                    # Combine: tasks that match query title + all tasks if project title matches
-                    tasks_to_show = filtered_tasks | all_project_tasks
-                    tasks_to_show = tasks_to_show.distinct()
-                else:
-                    tasks_to_show = filtered_tasks
+                    tasks_to_show = tasks_to_show.filter(due_date__lte=due_before)
 
                 # Annotate for template with correct status values
                 for t in tasks_to_show:
