@@ -1,3 +1,4 @@
+
 import os
 import json
 from datetime import date
@@ -6,7 +7,6 @@ from django.http import HttpResponseBadRequest, Http404, JsonResponse, HttpRespo
 from django.utils import timezone
 from django.utils.timezone import now
 from django.core.paginator import Paginator
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.db.models import DateField, Q
 from django.db.models.functions import Cast
@@ -16,6 +16,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.middleware.csrf import get_token
+from django.core.exceptions import PermissionDenied
 
 from .models import (
     UserProfile,
@@ -27,6 +28,27 @@ from .models import (
 )
 from .forms import UserProfileForm, UserForm, ProjectForm, TaskForm
 from .services.analytics import user_dashboard, pm_dashboard, admin_dashboard
+
+
+def _user_can_access_project(user, project):
+    if not user.is_authenticated:
+        return False
+    return (
+        project.owner_id == user.id
+        or project.members.filter(id=user.id).exists()
+        or project.tasks.filter(assigned_to=user).exists()
+    )
+
+
+def _user_can_edit_task(user, task):
+    return user.is_authenticated and (task.project.owner_id == user.id or task.assigned_to_id == user.id)
+
+
+def _normalized_task_status(raw_status, default=Task.STATUS_TODO):
+    allowed = {choice[0] for choice in Task.STATUS_CHOICES}
+    if raw_status in allowed:
+        return raw_status
+    return Task.LEGACY_STATUS_MAP.get(raw_status, default)
 
 
 def dashboard_view(request):
@@ -62,7 +84,7 @@ def dashboard_view(request):
             try:
                 task = Task.objects.get(id=task_id)
                 if task.assigned_to == request.user:
-                    task.status = 'Completed'
+                    task.status = Task.STATUS_DONE
                     task.save()
             except Task.DoesNotExist:
                 pass
@@ -71,28 +93,33 @@ def dashboard_view(request):
         # Load only incomplete tasks
         tasks = Task.objects.filter(
             assigned_to=request.user,
-            status__in=['Pending', 'In Progress'],
+            status__in=[Task.STATUS_TODO, Task.STATUS_IN_PROGRESS],
             due_date=selected_date
         ).order_by('due_date')
 
         for task in tasks:
             task.completed = False
-            task.is_overdue = task.due_date and task.due_date < today
 
     # --- Analytics ---
     analytics = {
         'total_users': User.objects.count(),
         'total_projects': Project.objects.count(),
-        'tasks_completed': Task.objects.filter(status='Completed').count(),
-        'tasks_overdue': Task.objects.filter(status__in=['Pending', 'In Progress'], due_date__lt=today).count(),
+        'tasks_completed': Task.objects.filter(status=Task.STATUS_DONE).count(),
+        'tasks_overdue': Task.objects.filter(
+            status__in=[Task.STATUS_TODO, Task.STATUS_IN_PROGRESS],
+            due_date__lt=today
+        ).count(),
     }
 
     # --- All users stats ---
     all_users = []
     for u in User.objects.all():
         tasks_assigned = Task.objects.filter(assigned_to=u).count()
-        overdue_tasks = Task.objects.filter(assigned_to=u, status__in=['Pending', 'In Progress'],
-                                            due_date__lt=today).count()
+        overdue_tasks = Task.objects.filter(
+            assigned_to=u,
+            status__in=[Task.STATUS_TODO, Task.STATUS_IN_PROGRESS],
+            due_date__lt=today
+        ).count()
         all_users.append({
             'username': u.username,
             'tasks_assigned': tasks_assigned,
@@ -132,6 +159,7 @@ def admin_panel(request):
 
 
 @login_required
+@require_POST
 def toggle_user_active(request, user_id):
     if not request.user.is_superuser:
         return HttpResponseForbidden()
@@ -147,6 +175,7 @@ def toggle_user_active(request, user_id):
 
 
 @login_required
+@require_POST
 def toggle_superuser(request, user_id):
     if not request.user.is_superuser:
         return HttpResponseForbidden()
@@ -162,6 +191,7 @@ def toggle_superuser(request, user_id):
 
 
 @login_required
+@require_POST
 def change_role(request, membership_id):
     if not request.user.is_superuser:
         return HttpResponseForbidden()
@@ -313,8 +343,7 @@ def dashboard(request):
 
         # Annotate tasks for template convenience
         for task in tasks:
-            task.completed = task.status == 'Completed'
-            task.is_overdue = task.due_date and task.status != 'Completed' and task.due_date < today
+            task.completed = task.status == Task.STATUS_DONE
     else:
         tasks = []
 
@@ -345,10 +374,9 @@ def shared_project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
     today = date.today()
 
-    # Annotate tasks with 'is_overdue'
+    # Annotate tasks with extra attachment metadata
     tasks = project.tasks.all()
     for task in tasks:
-        task.is_overdue = task.due_date is not None and task.due_date < today and task.status != 'Completed'
         if task.attachment:
             task.attachment_filename = os.path.basename(task.attachment.name)
 
@@ -383,6 +411,7 @@ def delete_reminder(request, reminder_id):
     return redirect('project_detail', pk=project_id)
 
 
+@login_required
 def search_results(request):
     query = request.GET.get('q', '').strip()
     task_status = request.GET.get('status', '').strip()
@@ -393,20 +422,28 @@ def search_results(request):
 
     if query:
         # Find users whose username, first_name, last_name, or projects/tasks match
+        accessible_projects = Project.objects.filter(
+            Q(owner=request.user) | Q(members=request.user)
+        ).distinct()
+        accessible_project_ids = set(accessible_projects.values_list("id", flat=True))
+
         users = User.objects.filter(
             Q(username__icontains=query) |
             Q(first_name__icontains=query) |
             Q(last_name__icontains=query) |
-            Q(owned_projects__title__icontains=query) |
-            Q(member_projects__title__icontains=query) |
-            Q(tasks__title__icontains=query)
+            Q(owned_projects__in=accessible_projects, owned_projects__title__icontains=query) |
+            Q(member_projects__in=accessible_projects, member_projects__title__icontains=query) |
+            Q(tasks__project__in=accessible_projects, tasks__title__icontains=query)
         ).distinct()
 
         for user in users:
             projects_with_tasks = []
 
             # Combine owned and member projects
-            user_projects = list(user.owned_projects.all()) + list(user.member_projects.all())
+            user_projects = [
+                p for p in (list(user.owned_projects.all()) + list(user.member_projects.all()))
+                if p.id in accessible_project_ids
+            ]
 
             # Check if user matched by username/name or by project/task
             user_matched_by_name = (
@@ -443,7 +480,6 @@ def search_results(request):
                 # Annotate for template with correct status values
                 for t in tasks_to_show:
                     t.completed = t.status == 'done'
-                    t.is_overdue = t.due_date and t.status != 'done' and t.due_date < today
 
                 if tasks_to_show.exists():
                     projects_with_tasks.append({
@@ -546,6 +582,7 @@ def completed_projects_archive(request):
 
 
 @login_required
+@require_POST
 def archive_project(request, pk):
     project = get_object_or_404(Project, pk=pk, owner=request.user)
 
@@ -559,6 +596,7 @@ def archive_project(request, pk):
 
 
 @login_required
+@require_POST
 def recover_project(request, pk):
     project = get_object_or_404(Project, pk=pk, owner=request.user)
 
@@ -573,7 +611,10 @@ def recover_project(request, pk):
 
 @login_required
 def project_detail(request, pk):
-    project = get_object_or_404(Project, id=pk)
+    project_qs = Project.objects.filter(
+        Q(owner=request.user) | Q(members=request.user) | Q(tasks__assigned_to=request.user)
+    ).distinct()
+    project = get_object_or_404(project_qs, id=pk)
     all_users = list(User.objects.exclude(id=request.user.id).order_by('username'))
     if project.owner not in all_users:
         all_users.insert(0, project.owner)
@@ -690,6 +731,7 @@ def add_project(request, project_type):
 
 
 @login_required
+@require_POST
 def delete_project(request, pk):
     project = get_object_or_404(Project, pk=pk)
     if project.owner == request.user:
@@ -700,6 +742,8 @@ def delete_project(request, pk):
 @login_required
 def add_task(request, project_id):
     project = get_object_or_404(Project, id=project_id)
+    if not _user_can_access_project(request.user, project):
+        raise PermissionDenied("You do not have access to this project.")
 
     if request.method == 'POST':
         form = TaskForm(request.POST)
@@ -717,16 +761,19 @@ def add_task(request, project_id):
 
 
 @login_required
+@require_POST
 def update_task(request, task_id):
     task = get_object_or_404(Task, pk=task_id)
+    if not _user_can_edit_task(request.user, task):
+        raise PermissionDenied("You do not have permission to update this task.")
     project = task.project
 
-    if request.method == 'POST':
-        task.title = request.POST.get('title')
-        task.due_date = request.POST.get('due_date') or None
-        task.status = request.POST.get('status')
-        task.assigned_to_id = request.POST.get('assigned_to') or None
-        task.save()
+    task.title = request.POST.get('title')
+    task.due_date = request.POST.get('due_date') or None
+    task.status = _normalized_task_status(request.POST.get('status'), default=task.status)
+    task.assigned_to_id = request.POST.get('assigned_to') or None
+    task.save()
+    if hasattr(project, "update_shared_users_from_tasks"):
         project.update_shared_users_from_tasks()
 
     return redirect('project_detail', pk=project.id)
@@ -735,60 +782,73 @@ def update_task(request, task_id):
 @login_required
 def task_detail(request, task_id):
     task = get_object_or_404(Task, id=task_id)
+    if not _user_can_access_project(request.user, task.project):
+        raise PermissionDenied("You do not have access to this task.")
 
     if request.method == 'POST':
         form_type = request.POST.get('form_type', "")
 
         if form_type == 'status_checkbox':
-            task.status = 'Completed' if request.POST.get('status_checkbox') == 'on' else 'In Progress'
+            if not _user_can_edit_task(request.user, task):
+                raise PermissionDenied("You do not have permission to update this task.")
+            task.status = Task.STATUS_DONE if request.POST.get('status_checkbox') == 'on' else Task.STATUS_IN_PROGRESS
             task.save()
-            return redirect('task_detail', pk=task.pk)
+            return redirect('task_detail', task_id=task.id)
 
         # task edit form
         elif form_type == 'edit_task':
+            if not _user_can_edit_task(request.user, task):
+                raise PermissionDenied("You do not have permission to edit this task.")
             task.title = request.POST.get('title', task.title)
             task.due_date = request.POST.get('due_date') or None
-            task.status = request.POST.get('status', task.status)
+            task.status = _normalized_task_status(request.POST.get('status'), default=task.status)
             task.description = request.POST.get('description', '').strip() or ''
 
             if request.FILES.get("attachment"):
                 task.attachment = request.FILES["attachment"]
 
             task.save()
-            return redirect('task_detail', pk=task.pk)
+            return redirect('task_detail', task_id=task.id)
 
         # Add comment
         elif form_type == 'add_task_comment':
             content = request.POST.get('content', '').strip()
             if content:
                 Comment_task.objects.create(user=request.user, task=task, content=content)
-            return redirect('task_detail', pk=task.pk)
+            return redirect('task_detail', task_id=task.id)
 
     return render(request, 'mini_notion/task_detail.html', {'task': task})
 
 
-@csrf_exempt
+@login_required
+@require_POST
 def update_task_status(request):
-    if request.method == 'POST' and request.user.is_authenticated:
-        data = json.loads(request.body)
-        task_id = data.get('id')
-        completed = data.get('completed', False)
+    try:
+        data = json.loads(request.body or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
 
-        try:
-            task = Task.objects.get(id=task_id)
-            # only allow updating tasks assigned to the current user
-            if task.assigned_to == request.user:
-                task.status = 'Completed' if completed else 'Pending'
-                task.save()
-                return JsonResponse({'success': True})
-        except Task.DoesNotExist:
-            pass
-    return JsonResponse({'success': False})
+    task_id = data.get('id')
+    completed = data.get('completed', False)
+
+    try:
+        task = Task.objects.get(id=task_id)
+    except Task.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Task not found'}, status=404)
+
+    # only allow updating tasks assigned to the current user
+    if task.assigned_to != request.user:
+        return JsonResponse({'success': False, 'error': 'Forbidden'}, status=403)
+
+    task.status = Task.STATUS_DONE if completed else Task.STATUS_TODO
+    task.save()
+    return JsonResponse({'success': True})
 
 
 @login_required
-def delete_task(request, pk):
-    task = get_object_or_404(Task, pk=pk)
+@require_POST
+def delete_task(request, task_id):
+    task = get_object_or_404(Task, pk=task_id)
     project = task.project
 
     if request.user == task.assigned_to or request.user == project.owner:

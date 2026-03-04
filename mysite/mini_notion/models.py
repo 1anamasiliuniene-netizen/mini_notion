@@ -1,8 +1,11 @@
+import os
+
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
+
 
 class UserProfile(models.Model):
-
     SYSTEM_ROLE_CHOICES = [
         ('admin', 'Admin'),
         ('pm', 'Project Manager'),
@@ -34,13 +37,11 @@ class UserProfile(models.Model):
     # Optional profile photo
     photo = models.ImageField(upload_to='profile_photos/', null=True, blank=True)
 
-
     def __str__(self):
         return self.user.username
 
 
 class Project(models.Model):
-
     PROJECT_TYPES = [
         ('personal', 'Personal'),
         ('work', 'Work'),
@@ -81,6 +82,21 @@ class Project(models.Model):
             membership.role = 'admin'
             membership.save()
 
+    def update_shared_users_from_tasks(self):
+        """
+        Keep project memberships aligned with task assignees.
+        Owner is always admin; assignees are added as regular users.
+        """
+        assignee_ids = self.tasks.exclude(assigned_to__isnull=True).values_list('assigned_to_id', flat=True).distinct()
+        for user_id in assignee_ids:
+            if user_id == self.owner_id:
+                continue
+            ProjectMembership.objects.get_or_create(
+                user_id=user_id,
+                project=self,
+                defaults={'role': 'user'}
+            )
+
     def __str__(self):
         return self.title
 
@@ -112,30 +128,59 @@ class ProjectMembership(models.Model):
     class Meta:
         unique_together = ('user', 'project')
 
+
 class Task(models.Model):
+
+    STATUS_TODO = 'todo'
+    STATUS_IN_PROGRESS = 'in_progress'
+    STATUS_DONE = 'done'
+
     STATUS_CHOICES = (
-        ('todo', 'To Do'),
-        ('in_progress', 'In Progress'),
-        ('done', 'Done'),
+        (STATUS_TODO, 'To Do'),
+        (STATUS_IN_PROGRESS, 'In Progress'),
+        (STATUS_DONE, 'Done'),
     )
+    LEGACY_STATUS_MAP = {
+        'Not Started': STATUS_TODO,
+        'Pending': STATUS_TODO,
+        'In Progress': STATUS_IN_PROGRESS,
+        'Completed': STATUS_DONE,
+    }
+
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks')
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='todo',
+        default=STATUS_TODO,
         db_index=True
     )
-
     due_date = models.DateField(null=True, blank=True, db_index=True)
     assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks')
     created_at = models.DateTimeField(auto_now_add=True)
     attachment = models.FileField(upload_to='task_attachments/', blank=True, null=True)
     estimated_time = models.DurationField(null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        # Normalize legacy values to canonical enum values.
+        self.status = self.LEGACY_STATUS_MAP.get(self.status, self.status)
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.title
+
+    @property
+    def is_overdue(self):
+        from django.utils import timezone
+
+        if not self.due_date:
+            return False
+
+        if self.status == self.STATUS_DONE:
+            return False
+
+        return self.due_date < timezone.now().date()
 
 
 class Comment_project(models.Model):
@@ -146,6 +191,7 @@ class Comment_project(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.project.title}"
+
 
 class Comment_task(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -166,6 +212,7 @@ class Reminder(models.Model):
     def __str__(self):
         return self.title
 
+
 class TimeEntry(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="time_entries")
@@ -175,4 +222,3 @@ class TimeEntry(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.task.title}"
-

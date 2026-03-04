@@ -26,10 +26,10 @@
                         {% endif %}
                         <p class="mb-2 text-secondary"><span class="fw-normal">Type:</span> {{ project.get_project_type_display }}</p>
                         <p class="mb-2 text-secondary"><span class="fw-normal">Owner:</span> {{ project.owner.username }}</p>
-                        {% if project.shared_with.all %}
+                        {% if project.members.all %}
                         <p class="mb-2 text-secondary"><span class="fw-normal">Shared With:</span>
-                            {% for user in project.shared_with.all %}
-                                {{ user.username }}{% if not forloop.last %}, {% endif %}
+                            {% for user in project.members.all %}
+                            {{ user.username }}{% if not forloop.last %}, {% endif %}
                             {% endfor %}
                         </p>
                         {% endif %}
@@ -40,23 +40,23 @@
                         <h4 class="mt-4 text-secondary">Tasks</h4>
                         {% if tasks %}
                         <ul class="list-group">
-                            {% for task in tasks %}
+                            {% for t in tasks %}
                             <li class="list-group-item text-secondary">
                                 <div>
-                                    <span class="fw-normal">{{ task.title }}</span>
-                                    {% if task.assigned_to %}
-                                    <br><small>Assigned to: {{ task.assigned_to.username }}</small>
+                                    <span class="fw-normal">{{ t.title }}</span>
+                                    {% if t.assigned_to %}
+                                    <br><small>Assigned to: {{ t.assigned_to.username }}</small>
                                     {% endif %}
-                                    {% if task.status %}
-                                    <br><small>Status: {{ task.status }}</small>
+                                    {% if t.status %}
+                                    <br><small>Status: {{ t.status }}</small>
                                     {% endif %}
-                                    {% if task.attachment %}
-                                    <br><small>Attachment: {{ task.attachment_filename }}</small>
+                                    {% if t.attachment %}
+                                    <br><small>Attachment: {{ t.attachment_filename|default:t.attachment.name }}</small>
                                     {% endif %}
                                 </div>
-                                {% if task.is_overdue %}
-                                <div class="float-end">
-                                    <span class="badge bg-secondary">Overdue: {{ task.due_date }}</span>
+                                {% if t.is_overdue %}
+                                <div class="float-end text-danger">
+                                    Overdue: {{ t.due_date }}
                                 </div>
                                 {% endif %}
                             </li>
@@ -75,7 +75,7 @@
                             {% for comment in comments %}
                             <li class="list-group-item text-secondary">
                                 <span class="fw-normal">{{ comment.user.username }}:</span> {{ comment.content }}
-                                <br><small>{{ comment.created }}</small>
+                                <br><small>{{ comment.created_at|date:"Y-m-d H:i" }}</small>
                             </li>
                             {% endfor %}
                         </ul>
@@ -112,40 +112,40 @@
 
 <!-- Print Styles -->
 <style>
-@media print {
-    .no-print, button, .btn, .hero-section, .navbar, footer {
-        display: none !important;
-    }
+    @media print {
+        .no-print, button, .btn, .hero-section, .navbar, footer {
+            display: none !important;
+        }
 
-    .report-card {
-        position: static !important;
-        width: auto !important;
-        box-shadow: none !important;
-        color: #6c757d !important; /* enforce secondary gray */
-    }
+        .report-card {
+            position: static !important;
+            width: auto !important;
+            box-shadow: none !important;
+            color: #6c757d !important; /* enforce secondary gray */
+        }
 
-    .report-card, .list-group-item, table, tr, td, th {
-        page-break-inside: avoid;
-    }
+        .report-card, .list-group-item, table, tr, td, th {
+            page-break-inside: avoid;
+        }
 
-    .project-info-section,
-    .tasks-section,
-    .comments-section,
-    .reminders-section {
-        page-break-before: auto;
-        page-break-after: auto;
-    }
+        .project-info-section,
+        .tasks-section,
+        .comments-section,
+        .reminders-section {
+            page-break-before: auto;
+            page-break-after: auto;
+        }
 
-    h3, h4 {
-        page-break-after: avoid;
-        page-break-before: avoid;
-    }
+        h3, h4 {
+            page-break-after: avoid;
+            page-break-before: avoid;
+        }
 
-    body {
-        margin: 1cm;
-        font-size: 12pt;
+        body {
+            margin: 1cm;
+            font-size: 12pt;
+        }
     }
-}
 </style>
 
 {% endblock %}

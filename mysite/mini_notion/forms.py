@@ -72,8 +72,24 @@ class TaskForm(forms.ModelForm):
 
 
 class TaskStatusForm(forms.ModelForm):
-    completed = forms.BooleanField(required=False, label="Completed")
+    completed = forms.BooleanField(required=False, label="Done")
 
     class Meta:
         model = Task
-        fields = ['completed']
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.instance and self.instance.status == Task.STATUS_DONE:
+            self.fields['completed'].initial = True
+
+    def save(self, commit=True):
+        task = self.instance
+        if self.cleaned_data['completed']:
+            task.status = Task.STATUS_DONE
+        else:
+            task.status = Task.STATUS_TODO
+        if commit:
+            task.save()
+        return task

@@ -15,7 +15,7 @@
             {% csrf_token %}
             <input type="hidden" name="form_type" value="status_checkbox">
 
-            {% if task.status == "Completed" %}
+            {% if task.status == "done" %}
             <button type="submit" name="status_checkbox" value="off" class="btn btn-outline-secondary">
                 Mark as In Progress
             </button>
@@ -57,9 +57,9 @@
         <div class="mb-3">
             <label class="form-label">Status</label>
             <select name="status" class="form-select">
-                <option value="Not Started" {% if task.status == "Not Started" %}selected{% endif %}>Not Started</option>
-                <option value="In Progress" {% if task.status == "In Progress" %}selected{% endif %}>In Progress</option>
-                <option value="Completed" {% if task.status == "Completed" %}selected{% endif %}>Completed</option>
+                <option value="todo" {% if task.status == "todo" %}selected{% endif %}>To Do</option>
+                <option value="in_progress" {% if task.status == "in_progress" %}selected{% endif %}>In Progress</option>
+                <option value="done" {% if task.status == "done" %}selected{% endif %}>Done</option>
             </select>
         </div>
 
@@ -73,8 +73,7 @@
             <label class="form-label">Attachment</label>
             <input type="file" name="attachment" class="form-control">
             {% if task.attachment %}
-            <small>Current file: <a href="{{ task.attachment.url }}" target="_blank">{{ task.attachment.name|basename
-                }}</a></small>
+            <small>Current file: <a href="{{ task.attachment.url }}" target="_blank">{{ task.attachment.name }}</a></small>
             {% endif %}
         </div>
 

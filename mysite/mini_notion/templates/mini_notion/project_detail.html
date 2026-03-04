@@ -159,12 +159,12 @@
                                    type="checkbox"
                                    name="completed"
                                    id="task_{{ task.id }}"
-                                   {% if task.status == 'done' or task.status == 'Completed' %}checked{% endif %}
+                                   {% if task.status == 'done' %}checked{% endif %}
                             onchange="this.form.submit()">
                             <label class="form-check-label" for="task_{{ task.id }}">Done</label>
                         </div>
 
-                        <div class="flex-grow-1 {% if task.status == 'done' or task.status == 'Completed' %}text-decoration-line-through text-secondary{% endif %}">
+                        <div class="flex-grow-1 {% if task.status == 'done' %}text-decoration-line-through text-secondary{% endif %}">
                             {{ task.title }}
                             {% if task.assigned_to %} | {{ task.assigned_to.username }}{% endif %}
                             {% if task.due_date %} - {{ task.due_date }}{% endif %}
