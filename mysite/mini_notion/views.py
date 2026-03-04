@@ -550,7 +550,7 @@ def archive_project(request, pk):
     project = get_object_or_404(Project, pk=pk, owner=request.user)
 
     # Only archive if all tasks are completed
-    if project.tasks.exists() and all(task.status == 'Completed' for task in project.tasks.all()):
+    if project.tasks.exists() and all(task.status == 'done' for task in project.tasks.all()):
         project.is_completed = True
         project.save()
         messages.success(request, f'Project "{project.title}" archived.')
@@ -586,7 +586,7 @@ def project_detail(request, pk):
             completed = request.POST.get('completed') == 'on'
             try:
                 task = Task.objects.get(pk=task_id, project=project)
-                task.status = 'Completed' if completed else 'In Progress'
+                task.status = 'done' if completed else 'in_progress'
                 task.save()
                 messages.success(request, f'Task "{task.title}" status updated!')
             except Task.DoesNotExist:
@@ -619,7 +619,7 @@ def project_detail(request, pk):
                         description=description,
                         due_date=due_date,
                         assigned_to=user,
-                        status='In Progress'
+                        status='in_progress'
                     )
             else:
                 assigned_user = None
@@ -634,7 +634,7 @@ def project_detail(request, pk):
                     description=description,
                     due_date=due_date,
                     assigned_to=assigned_user,
-                    status='In Progress'
+                    status='in_progress'
                 )
 
         # Add project comment

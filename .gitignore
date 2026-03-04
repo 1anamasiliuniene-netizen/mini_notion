@@ -1,2 +1,53 @@
+# Django settings
 /mysite/mysite/my_settings.py
+
+# Database
 /mysite/db.sqlite3
+*.db
+
+# Debug files
+*.py.bak
+debug*.py
+debug*.txt
+*_debug.py
+*_debug.txt
+fix_*.py
+fix_*.txt
+update_*.py
+update_*.txt
+check_*.py
+check_*.txt
+search_*.py
+search_*.txt
+final_*.py
+test_*.py
+output*.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Cache
+.cache/
+.pytest_cache/
