@@ -28,15 +28,25 @@
                         {% csrf_token %}
                         <input type="hidden" name="form_type" value="edit_project">
 
-                        <input class="form-control mb-2" type="text" name="title" value="{{ project.title }}">
-                        <textarea class="form-control mb-2" name="description">{{ project.description }}</textarea>
-                        <select class="form-select mb-2" name="project_type">
-                            <option value="personal" {% if project.project_type == "personal" %}selected{% endif %}>
-                            Personal
-                            </option>
-                            <option value="work" {% if project.project_type == "work" %}selected{% endif %}>Work</option>
-                        </select>
-                        <input class="form-control mb-2" type="text" value="{{ project.owner.username }}" disabled>
+                        <div class="mb-2">
+                            <label for="project_title" class="form-label">Title</label>
+                            <input class="form-control" type="text" id="project_title" name="title" value="{{ project.title }}">
+                        </div>
+                        <div class="mb-2">
+                            <label for="project_description" class="form-label">Description</label>
+                            <textarea class="form-control" id="project_description" name="description">{{ project.description }}</textarea>
+                        </div>
+                        <div class="mb-2">
+                            <label for="project_type" class="form-label">Project Type</label>
+                            <select class="form-select" id="project_type" name="project_type">
+                                <option value="personal" {% if project.project_type == "personal" %}selected{% endif %}>Personal</option>
+                                <option value="work" {% if project.project_type == "work" %}selected{% endif %}>Work</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="project_owner" class="form-label">Owner</label>
+                            <input class="form-control" type="text" id="project_owner" value="{{ project.owner.username }}" disabled>
+                        </div>
 
                         <button class="btn btn-primary" type="submit">Save Project</button>
                     </form>
@@ -60,7 +70,10 @@
                     <form method="post" class="mt-5">
                         {% csrf_token %}
                         <input type="hidden" name="form_type" value="add_comment">
-                        <textarea class="form-control mb-2" name="content" placeholder="Your comment"></textarea>
+                        <div class="mb-2">
+                            <label for="comment_content" class="form-label">Your Comment</label>
+                            <textarea class="form-control" id="comment_content" name="content" placeholder="Your comment"></textarea>
+                        </div>
                         <button class="btn btn-primary" type="submit">Add Comment</button>
                     </form>
                 </div>
@@ -117,8 +130,14 @@
                     <form method="post">
                         {% csrf_token %}
                         <input type="hidden" name="form_type" value="add_reminder">
-                        <input class="form-control mb-2" type="text" name="title" placeholder="Reminder title" required>
-                        <input class="form-control mb-2" type="datetime-local" name="due_time" required>
+                        <div class="mb-2">
+                            <label for="reminder_title" class="form-label">Reminder Title</label>
+                            <input class="form-control" type="text" id="reminder_title" name="title" placeholder="Reminder title" required>
+                        </div>
+                        <div class="mb-2">
+                            <label for="reminder_due_time" class="form-label">Due Date & Time</label>
+                            <input class="form-control" type="datetime-local" id="reminder_due_time" name="due_time" required>
+                        </div>
                         <button class="btn btn-primary" type="submit">Add Reminder</button>
                     </form>
 
@@ -142,6 +161,7 @@
                                    id="task_{{ task.id }}"
                                    {% if task.status == 'done' or task.status == 'Completed' %}checked{% endif %}
                             onchange="this.form.submit()">
+                            <label class="form-check-label" for="task_{{ task.id }}">Done</label>
                         </div>
 
                         <div class="flex-grow-1 {% if task.status == 'done' or task.status == 'Completed' %}text-decoration-line-through text-secondary{% endif %}">
@@ -167,23 +187,36 @@
                     <form method="post" class="mt-5">
                         {% csrf_token %}
                         <input type="hidden" name="form_type" value="add_task">
-                        <input class="form-control mb-1" type="text" name="title" placeholder="Task title">
-                        <textarea class="form-control mb-1" name="description" placeholder="Description"></textarea>
-                        <select class="form-select mb-1" name="assigned_to">
-                            <option value="">None</option>
-                            {% for user in all_users %}
-                            <option value="{{ user.id }}">{{ user.username }}</option>
-                            {% endfor %}
-                        </select>
+                        <div class="mb-1">
+                            <label for="task_title" class="form-label">Task Title</label>
+                            <input class="form-control" type="text" id="task_title" name="title" placeholder="Task title">
+                        </div>
+                        <div class="mb-1">
+                            <label for="task_description" class="form-label">Description</label>
+                            <textarea class="form-control" id="task_description" name="description" placeholder="Description"></textarea>
+                        </div>
+                        <div class="mb-1">
+                            <label for="task_assigned_to" class="form-label">Assign To</label>
+                            <select class="form-select" id="task_assigned_to" name="assigned_to">
+                                <option value="">None</option>
+                                {% for user in all_users %}
+                                <option value="{{ user.id }}">{{ user.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                         <div class="form-check mb-1">
                             <input class="form-check-input" type="checkbox" name="assign_to_all" id="assign_to_all">
                             <label class="form-check-label" for="assign_to_all">Assign to all staff</label>
                         </div>
-                        <input class="form-control mb-1" type="date" name="due_date">
+                        <div class="mb-1">
+                            <label for="task_due_date" class="form-label">Due Date</label>
+                            <input class="form-control" type="date" id="task_due_date" name="due_date">
+                        </div>
                         <button class="btn btn-success btn-sm" type="submit">Add Task</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-    {% endblock %}
+</div>
+{% endblock %}

@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.conf import settings
 
 class UserProfile(models.Model):
 
@@ -69,6 +68,18 @@ class Project(models.Model):
     def update_completion_status(self):
         self.is_completed = not self.tasks.exclude(status='done').exists()
         self.save()
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Ensure owner is a project admin
+        membership, created = ProjectMembership.objects.get_or_create(
+            user=self.owner,
+            project=self,
+            defaults={'role': 'admin'}
+        )
+        if not created and membership.role != 'admin':
+            membership.role = 'admin'
+            membership.save()
 
     def __str__(self):
         return self.title
@@ -165,16 +176,3 @@ class TimeEntry(models.Model):
     def __str__(self):
         return f"{self.user} - {self.task.title}"
 
-def save(self, *args, **kwargs):
-    is_new = self.pk is None
-    super().save(*args, **kwargs)
-
-    membership, created = ProjectMembership.objects.get_or_create(
-        user=self.owner,
-        project=self,
-        defaults={'role': 'pm'}
-    )
-
-    if not created and membership.role != 'pm':
-        membership.role = 'pm'
-        membership.save()

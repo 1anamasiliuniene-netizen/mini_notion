@@ -8,7 +8,7 @@ from django.utils.timezone import now
 from django.core.paginator import Paginator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from django.db.models import DateField, Q, Count
+from django.db.models import DateField, Q
 from django.db.models.functions import Cast
 from django.contrib import messages
 from django.contrib.auth import login, logout
@@ -26,7 +26,7 @@ from .models import (
     ProjectMembership
 )
 from .forms import UserProfileForm, UserForm, ProjectForm, TaskForm
-from .services.analytics import user_dashboard, pm_dashboard, admin_dashboard, project_analytics
+from .services.analytics import user_dashboard, pm_dashboard, admin_dashboard
 
 
 def dashboard_view(request):
