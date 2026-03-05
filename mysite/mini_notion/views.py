@@ -17,6 +17,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.middleware.csrf import get_token
 from django.core.exceptions import PermissionDenied
+from django.conf import settings
+from django.core.cache import cache
 
 from .models import (
     UserProfile,
@@ -28,6 +30,7 @@ from .models import (
 )
 from .forms import UserProfileForm, UserForm, ProjectForm, TaskForm
 from .services.analytics import user_dashboard, pm_dashboard, admin_dashboard
+from .services.nasa_apod import NasaApiError, fetch_apod
 
 
 def _user_can_access_project(user, project):
@@ -370,8 +373,12 @@ def dashboard(request):
     return render(request, 'mini_notion/dashboard.html', context)
 
 
+@login_required
 def shared_project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
+    if not _user_can_access_project(request.user, project):
+        raise PermissionDenied("You do not have access to this shared project.")
+
     today = date.today()
 
     # Annotate tasks with extra attachment metadata
@@ -868,3 +875,68 @@ def signup_view(request):
     else:
         form = UserCreationForm()
     return render(request, 'mini_notion/signup.html', {'form': form})
+
+
+def _fetch_apod_cached(apod_date):
+    date_key = apod_date.isoformat() if apod_date else "today"
+    cache_key = f"nasa_apod:{date_key}"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    data = fetch_apod(
+        api_key=settings.NASA_API_KEY,
+        timeout_seconds=settings.NASA_API_TIMEOUT,
+        apod_date=apod_date,
+    )
+    cache.set(cache_key, data, timeout=settings.NASA_API_CACHE_TIMEOUT)
+    return data
+
+
+@login_required
+def nasa_apod_demo(request):
+    selected_date_raw = request.GET.get("date", "").strip()
+    selected_date = None
+    apod_data = None
+    error = None
+
+    if selected_date_raw:
+        try:
+            selected_date = date.fromisoformat(selected_date_raw)
+        except ValueError:
+            error = "Invalid date format. Use YYYY-MM-DD."
+
+    if error is None:
+        try:
+            apod_data = _fetch_apod_cached(selected_date)
+        except NasaApiError as exc:
+            error = str(exc)
+
+    return render(
+        request,
+        "mini_notion/nasa_apod_demo.html",
+        {
+            "apod_data": apod_data,
+            "selected_date": selected_date_raw,
+            "error": error,
+        },
+    )
+
+
+@login_required
+def nasa_apod_json(request):
+    selected_date_raw = request.GET.get("date", "").strip()
+    selected_date = None
+
+    if selected_date_raw:
+        try:
+            selected_date = date.fromisoformat(selected_date_raw)
+        except ValueError:
+            return JsonResponse({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+
+    try:
+        data = _fetch_apod_cached(selected_date)
+    except NasaApiError as exc:
+        return JsonResponse({"error": str(exc)}, status=502)
+
+    return JsonResponse(data)

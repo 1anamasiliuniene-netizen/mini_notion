@@ -3,8 +3,18 @@ from pathlib import Path
 from .my_settings import SECRET_KEY, DEBUG, ALLOWED_HOSTS
 import os
 
+try:
+    from dotenv import load_dotenv
+except ImportError:  # pragma: no cover - optional dependency during transition
+    load_dotenv = None
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+if load_dotenv is not None:
+    # Load both repo-level and project-level .env files if present.
+    load_dotenv(BASE_DIR.parent / ".env")
+    load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
@@ -130,6 +140,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 FORCE_SSL = str(os.getenv("DJANGO_FORCE_SSL", "0")).lower() in ("1", "true", "yes", "on")
+
+# External API integration settings
+NASA_API_KEY = os.getenv("NASA_API_KEY", "DEMO_KEY")
+NASA_API_TIMEOUT = int(os.getenv("NASA_API_TIMEOUT", "10"))
+NASA_API_CACHE_TIMEOUT = int(os.getenv("NASA_API_CACHE_TIMEOUT", "3600"))
 
 if FORCE_SSL:
     SECURE_SSL_REDIRECT = True

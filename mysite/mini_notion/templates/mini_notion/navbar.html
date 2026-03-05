@@ -146,6 +146,11 @@
                                 Settings
                             </a>
                         </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'nasa_apod_demo' %}">
+                                API Integration Demo
+                            </a>
+                        </li>
 
                         {% if user.is_superuser %}
                         <li>
@@ -252,5 +257,4 @@
   });
 })();
 </script>
-
 

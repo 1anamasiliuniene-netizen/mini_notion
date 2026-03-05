@@ -18,10 +18,10 @@
                     </h4>
 
                     <div class="row g-3 mb-4 text-center">
-                        <div class="col-3"><div class="card p-3"><h5>{{ analytics.total_users }}</h5><small>Users</small></div></div>
-                        <div class="col-3"><div class="card p-3"><h5>{{ analytics.total_projects }}</h5><small>Projects</small></div></div>
-                        <div class="col-3"><div class="card p-3"><h5>{{ analytics.tasks_completed }}</h5><small>Completed</small></div></div>
-                        <div class="col-3"><div class="card p-3"><h5>{{ analytics.tasks_overdue }}</h5><small>Overdue</small></div></div>
+                        <div class="col-6 col-md-3"><div class="card p-3 h-100"><h5>{{ analytics.total_users }}</h5><small>Users</small></div></div>
+                        <div class="col-6 col-md-3"><div class="card p-3 h-100"><h5>{{ analytics.total_projects }}</h5><small>Projects</small></div></div>
+                        <div class="col-6 col-md-3"><div class="card p-3 h-100"><h5>{{ analytics.tasks_completed }}</h5><small>Completed</small></div></div>
+                        <div class="col-6 col-md-3"><div class="card p-3 h-100"><h5>{{ analytics.tasks_overdue }}</h5><small>Overdue</small></div></div>
                     </div>
 
                     <div style="height:300px;">
@@ -73,8 +73,8 @@
                     {% if shared_projects %}
                     <div class="row g-3">
                         {% for project in shared_projects %}
-                        <div class="col-4">
-                            <div class="card small-card p-2 h-60">
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="card small-card p-2 h-100">
                                 <a href="{% url 'shared_project_detail' pk=project.id %}"><b>{{ project.title }}</b></a>
                                 <span class="text-secondary small">by {{ project.owner.username }}</span>
                             </div>

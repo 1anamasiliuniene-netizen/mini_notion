@@ -89,4 +89,8 @@ urlpatterns = [
 
     # Search
     path('search/', views.search_results, name='search_results'),
+
+    # External API demo (NASA APOD)
+    path('integrations/nasa-apod/', views.nasa_apod_demo, name='nasa_apod_demo'),
+    path('api/nasa-apod/', views.nasa_apod_json, name='nasa_apod_json'),
 ]
