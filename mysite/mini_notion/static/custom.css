@@ -39,7 +39,7 @@ body:not(.dark-mode) {
     .list-group-item a,
     .list-group-item small,
     .card-body p,
-    .card-body span,
+    .card-body span:not(.badge),
     .card-body h6,
     .card-body h4 {
         color: #6c757d !important;
@@ -292,6 +292,18 @@ body.dark-mode #reminderList .dropdown-item a:focus {
 }
 body.dark-mode #reminderList .dropdown-item small {
     color: #e0e0e0 !important;
+}
+
+/* Keep text readable on Bootstrap secondary badges. */
+.badge.bg-secondary,
+.badge.text-bg-secondary {
+    color: #fff !important;
+}
+
+.list-group-item .badge,
+.card .badge,
+.card-body .badge {
+    color: #fff !important;
 }
 
 /* ============================= */

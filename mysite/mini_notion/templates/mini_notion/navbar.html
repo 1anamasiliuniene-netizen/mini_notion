@@ -87,7 +87,7 @@
                             <i class="bi bi-bell fs-5"></i>
                             {% if navbar_reminders %}
                             <span id="reminderBadge"
-                                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
+                                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary text-white">
                                 {{ navbar_reminders|length }}
                             </span>
                             {% endif %}
@@ -114,7 +114,7 @@
                                 {% if not reminder.completed %}
                                 <button type="submit" class="btn btn-sm btn-success">✓</button>
                                 {% else %}
-                                <span class="badge bg-secondary">Completed</span>
+                                <span class="badge bg-secondary text-white">Completed</span>
                                 {% endif %}
                             </form>
                         </li>
@@ -146,11 +146,13 @@
                                 Settings
                             </a>
                         </li>
+                        {% if user.is_superuser %}
                         <li>
                             <a class="dropdown-item" href="{% url 'nasa_apod_demo' %}">
                                 API Integration Demo
                             </a>
                         </li>
+                        {% endif %}
 
                         {% if user.is_superuser %}
                         <li>
@@ -257,4 +259,3 @@
   });
 })();
 </script>
-
