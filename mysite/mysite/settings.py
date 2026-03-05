@@ -2,6 +2,12 @@
 from pathlib import Path
 from .my_settings import SECRET_KEY, DEBUG, ALLOWED_HOSTS
 import os
+from django.core.exceptions import ImproperlyConfigured
+
+try:
+    import dj_database_url
+except ImportError:  # pragma: no cover - optional in local dev
+    dj_database_url = None
 
 try:
     from dotenv import load_dotenv
@@ -31,6 +37,12 @@ if allowed_hosts_env:
     ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(",") if h.strip()]
 else:
     ALLOWED_HOSTS = ALLOWED_HOSTS
+
+csrf_trusted_origins_env = os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").strip()
+CSRF_TRUSTED_ORIGINS = (
+    [o.strip() for o in csrf_trusted_origins_env.split(",") if o.strip()]
+    if csrf_trusted_origins_env else []
+)
 
 
 # Application definition
@@ -90,6 +102,19 @@ DATABASES = {
     }
 }
 
+database_url = os.getenv("DATABASE_URL", "").strip()
+if database_url:
+    if dj_database_url is None:
+        raise ImproperlyConfigured(
+            "DATABASE_URL is set but dj-database-url is not installed. "
+            "Install dependencies from requirements.txt."
+        )
+    DATABASES["default"] = dj_database_url.parse(
+        database_url,
+        conn_max_age=int(os.getenv("DJANGO_DB_CONN_MAX_AGE", "600")),
+        ssl_require=str(os.getenv("DJANGO_DB_SSL_REQUIRE", "1")).lower() in ("1", "true", "yes", "on"),
+    )
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -129,6 +154,10 @@ USE_TZ = True
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+}
 
 LOGIN_REDIRECT_URL = 'dashboard'  # redirect after login
 LOGOUT_REDIRECT_URL = 'dashboard'    # redirect after logout
@@ -154,6 +183,10 @@ if FORCE_SSL:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "same-origin"
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
+    X_FRAME_OPTIONS = "DENY"
 
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST = 'smtp.gmail.com'

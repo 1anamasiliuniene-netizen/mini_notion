@@ -41,3 +41,7 @@ This is a Django-based project and task management app with role-based collabora
 - Django Crispy Forms + Bootstrap 5
 - Pillow (image uploads)
 - WhiteNoise (static files)
+
+## Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for full deployment instructions.

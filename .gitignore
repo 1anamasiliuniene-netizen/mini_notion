@@ -1,5 +1,6 @@
 # Django settings
 /mysite/mysite/my_settings.py
+/mysite/.env
 
 # Database
 /mysite/db.sqlite3

@@ -8,6 +8,7 @@ urlpatterns = [
     # Dashboard
     path('', lambda request: redirect('dashboard'), name='home'),
     path('dashboard/', dashboard_view, name='dashboard'),
+    path('health/', views.health_check, name='health_check'),
 
     # Admin Panel
     path('admin-panel/', views.admin_panel, name='admin_panel'),

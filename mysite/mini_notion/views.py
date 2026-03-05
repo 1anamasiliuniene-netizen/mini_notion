@@ -940,3 +940,7 @@ def nasa_apod_json(request):
         return JsonResponse({"error": str(exc)}, status=502)
 
     return JsonResponse(data)
+
+
+def health_check(request):
+    return JsonResponse({"status": "ok"})
