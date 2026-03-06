@@ -890,15 +890,25 @@ def _fetch_apod_cached(apod_date):
     # Fallback demo data for environments with restricted network access (e.g., PythonAnywhere free tier)
     FALLBACK_DEMO = {
         "date": "2024-01-01",
-        "title": "NASA APOD Demo (Rate Limit Reached)",
-        "explanation": "You've reached the NASA API rate limit. The DEMO_KEY allows only 30 requests per hour. "
-                      "To continue using live NASA data, get your FREE API key (takes 2 minutes): "
-                      "1) Visit https://api.nasa.gov/ "
-                      "2) Enter your name and email "
-                      "3) Copy your API key "
-                      "4) Add it to your .env file: NASA_API_KEY=your-key-here "
-                      "Your free key allows 1,000 requests per hour! "
-                      "This demo image is the Crab Nebula (M1) captured by Hubble Space Telescope.",
+        "title": "NASA APOD Demo - Rate Limit Reached",
+        "explanation": (
+            "⚠️ NASA API Rate Limit Exceeded (DEMO_KEY: 30 requests/hour). "
+            "\n\n"
+            "📌 Note: Some NASA APIs have been archived (Earth API, Mars Rover API), "
+            "but the APOD (Astronomy Picture of the Day) API is still ACTIVE and maintained. "
+            "\n\n"
+            "🔑 To continue viewing live NASA images: "
+            "\n1. Visit https://api.nasa.gov/ "
+            "\n2. Enter your name and email (takes 1 minute) "
+            "\n3. Get your FREE API key instantly via email "
+            "\n4. Update your .env file: NASA_API_KEY=your-key-here "
+            "\n5. Reload your web app "
+            "\n\n"
+            "✅ Your free key gives you 1,000 requests per hour (vs 30 for DEMO_KEY). "
+            "\n\n"
+            "This demo image shows the Crab Nebula (M1) captured by Hubble Space Telescope - "
+            "a supernova remnant located 6,500 light-years away in the constellation Taurus."
+        ),
         "media_type": "image",
         "url": "https://apod.nasa.gov/apod/image/2401/m1_hubble_2048.jpg",
         "hdurl": "https://apod.nasa.gov/apod/image/2401/m1_hubble_full.jpg",

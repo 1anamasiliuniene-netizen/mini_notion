@@ -1,7 +1,19 @@
 from pathlib import Path
-from .my_settings import SECRET_KEY, DEBUG, ALLOWED_HOSTS
 import os
 from django.core.exceptions import ImproperlyConfigured
+
+# Local-only overrides file is optional in production.
+try:
+    from .my_settings import SECRET_KEY as LOCAL_SECRET_KEY, DEBUG as LOCAL_DEBUG, ALLOWED_HOSTS as LOCAL_ALLOWED_HOSTS
+except Exception:
+    LOCAL_SECRET_KEY = "dev-insecure-key-change-me"
+    LOCAL_DEBUG = True
+    LOCAL_ALLOWED_HOSTS = []
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+LOG_DIR = BASE_DIR.parent / "logs"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 try:
     import dj_database_url
@@ -13,9 +25,6 @@ try:
 except ImportError:  # pragma: no cover - optional dependency during transition
     load_dotenv = None
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
 if load_dotenv is not None:
     # Load both repo-level and project-level .env files if present.
     load_dotenv(BASE_DIR.parent / ".env")
@@ -26,16 +35,16 @@ if load_dotenv is not None:
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", SECRET_KEY)
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", LOCAL_SECRET_KEY)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = str(os.getenv("DJANGO_DEBUG", DEBUG)).lower() in ("1", "true", "yes", "on")
+DEBUG = str(os.getenv("DJANGO_DEBUG", LOCAL_DEBUG)).lower() in ("1", "true", "yes", "on")
 
 allowed_hosts_env = os.getenv("DJANGO_ALLOWED_HOSTS", "").strip()
 if allowed_hosts_env:
     ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(",") if h.strip()]
 else:
-    ALLOWED_HOSTS = ALLOWED_HOSTS
+    ALLOWED_HOSTS = LOCAL_ALLOWED_HOSTS
 
 csrf_trusted_origins_env = os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").strip()
 CSRF_TRUSTED_ORIGINS = (
@@ -210,7 +219,7 @@ LOGGING = {
         },
         'file': {
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR.parent, 'logs', 'django.log'),
+            'filename': str(LOG_DIR / 'django.log'),
             'formatter': 'verbose',
             'level': 'WARNING',
         },

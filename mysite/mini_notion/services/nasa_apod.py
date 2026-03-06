@@ -39,6 +39,23 @@ def fetch_apod(*, api_key: str, timeout_seconds: int = 10, apod_date: date | Non
         with urlopen(url, timeout=timeout_seconds, context=ssl_context) as response:
             payload = json.loads(response.read().decode("utf-8"))
     except HTTPError as exc:
+        if exc.code == 429:
+            raise NasaApiError(
+                "NASA API rate limit exceeded. The DEMO_KEY allows only 30 requests per hour. "
+                "Get your free API key at https://api.nasa.gov/ for 1,000 requests/hour limit. "
+                "Note: Some NASA APIs have been archived - APOD API is still active."
+            ) from exc
+        elif exc.code == 403:
+            raise NasaApiError(
+                "NASA API access forbidden. This may be due to: "
+                "1) Invalid API key, 2) Archived/deprecated endpoint, or 3) Service maintenance. "
+                "Check https://api.nasa.gov/ for API status."
+            ) from exc
+        elif exc.code >= 500:
+            raise NasaApiError(
+                f"NASA API server error ({exc.code}). The service may be temporarily unavailable. "
+                "Try again in a few minutes."
+            ) from exc
         raise NasaApiError(f"NASA API HTTP error: {exc.code}") from exc
     except URLError as exc:
         reason = exc.reason
