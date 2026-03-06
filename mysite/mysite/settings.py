@@ -180,7 +180,7 @@ FORCE_SSL = str(os.getenv("DJANGO_FORCE_SSL", "0")).lower() in ("1", "true", "ye
 
 # External API integration settings
 NASA_API_KEY = os.getenv("NASA_API_KEY", "DEMO_KEY")
-NASA_API_TIMEOUT = int(os.getenv("NASA_API_TIMEOUT", "10"))
+NASA_API_TIMEOUT = int(os.getenv("NASA_API_TIMEOUT", "20"))
 NASA_API_CACHE_TIMEOUT = int(os.getenv("NASA_API_CACHE_TIMEOUT", "3600"))
 
 if FORCE_SSL:
