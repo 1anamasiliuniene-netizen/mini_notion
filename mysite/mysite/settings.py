@@ -1,4 +1,3 @@
-
 from pathlib import Path
 from .my_settings import SECRET_KEY, DEBUG, ALLOWED_HOSTS
 import os
@@ -187,6 +186,52 @@ if FORCE_SSL:
     SECURE_REFERRER_POLICY = "same-origin"
     SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
     X_FRAME_OPTIONS = "DENY"
+
+# Logging configuration
+# In production (DEBUG=0): shows WARNING and ERROR level logs
+# In development (DEBUG=1): shows all levels including DEBUG/INFO
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR.parent, 'logs', 'django.log'),
+            'formatter': 'verbose',
+            'level': 'WARNING',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'] if DEBUG else ['console', 'file'],
+            'level': 'DEBUG' if DEBUG else 'WARNING',
+            'propagate': False,
+        },
+        'django.server': {
+            'handlers': ['console'],
+            'level': 'INFO' if DEBUG else 'WARNING',
+            'propagate': False,
+        },
+        'mini_notion': {
+            'handlers': ['console'] if DEBUG else ['console', 'file'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+        },
+    },
+}
 
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST = 'smtp.gmail.com'

@@ -1,0 +1,36 @@
+{% extends "mini_notion/base.html" %}
+
+{% block title %}NASA APOD Demo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+<h3>NASA Astronomy Picture of the Day</h3>
+
+<form method="get" class="mb-4">
+    <label>Date:</label>
+    <input type="date" name="date" value="{{ selected_date }}">
+    <button type="submit">Load</button>
+</form>
+
+{% if error %}
+<p class="text-danger">{{ error }}</p>
+{% endif %}
+
+{% if apod_data %}
+<h4 class="mb-3">{{ apod_data.title }}</h4>
+
+{% if apod_data.media_type == "image" %}
+<div class="mb-5">
+    <img src="{{ apod_data.url }}" style="width:60%; height:auto;">
+</div>
+{% endif %}
+
+<p style="width: 100%; line-height:1.6;">
+    {{ apod_data.explanation }}
+</p>
+
+{% endif %}
+
+</div>
+{% endblock %}
