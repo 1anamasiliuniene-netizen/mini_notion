@@ -7,11 +7,14 @@
 .env.*.local
 .env.production
 
-# Database files (live databases)
+# Database files (live databases and backups)
 /mysite/db.sqlite3
+/mysite/db.sqlite3.backup*
 *.db
 *.sqlite
 *.sqlite3
+db.sqlite3.backup*
+dump.rdb
 
 # API Keys and Credentials
 *.key
@@ -107,6 +110,8 @@ logs/*
 !*.md
 !*.sh
 !.env.example
-!db.sqlite3.backup*
-!db.sqlite3
 
+# Explicitly keep this sensitive docs out of git
+SSH_KEYS_CONFIRMED.md
+SSH_KEYS_SETUP.md
+SSH_SETUP_COMPLETE.md
