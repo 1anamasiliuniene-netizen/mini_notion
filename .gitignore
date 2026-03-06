@@ -1,28 +1,74 @@
-# Django settings
+# ⚠️ SENSITIVE INFORMATION - DO NOT COMMIT ⚠️
+
+# Django settings and secrets
 /mysite/mysite/my_settings.py
 /mysite/.env
+.env.local
+.env.*.local
+.env.production
 
-# Database (but keep backups and development db for documentation)
-/mysite/db.sqlite3.bak
+# Database files (live databases)
+/mysite/db.sqlite3
 *.db
+*.sqlite
+*.sqlite3
 
-# Debug files (Python only)
-*.py.bak
-debug*.py
-debug*.txt
-*_debug.py
-*_debug.txt
-fix_*.py
-fix_*.txt
-update_*.py
-update_*.txt
-check_*.py
-check_*.txt
-search_*.py
-search_*.txt
-final_*.py
-test_*.py
-output*.txt
+# API Keys and Credentials
+*.key
+*.pem
+*.pub
+credentials.json
+secrets.json
+private/
+secrets/
+.credentials/
+
+# AWS, Azure, GCP
+.aws/
+.azure/
+.gcp/
+*.p12
+*.jks
+
+# Third-party service credentials
+.auth/
+auth.json
+config.json
+!.env.example
+!.env.template
+
+# Security and Authentication
+*.crt
+*.cert
+*.cer
+*.der
+*.pfx
+*.p7b
+authorized_keys
+id_rsa
+id_dsa
+id_ed25519
+*.ppk
+
+# OAuth and Tokens
+.oauth
+oauth_token*
+access_token*
+refresh_token*
+bearer_token*
+
+# Personal data
+personal_data/
+private_data/
+*.xlsx
+*.xls
+*.csv
+sensitive/
+
+# Log files with potential sensitive data
+*debug.log
+error.log
+*.log
 
 # Python
 __pycache__/
