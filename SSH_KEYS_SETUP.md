@@ -10,13 +10,12 @@
 ### 1️⃣ Main Account Key (ana.masiliuniene@gmail.com)
 
 ```
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINKrRtwyvBTiDjN0Z6ZVPahr/IRiiD6NI0nmOTYKTb4C ana.masiliuniene@gmail.com
+
+
+
+
 ```
 
-### 2️⃣ Showcase Account Key (1ana.masiliuniene@gmail.com)
-
-```
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL5rfp3T6HVH210bPydklZgZrdcGKTHceojdWAMZ1FCJ 1ana.masiliuniene@gmail.com
 ```
 
 ---
@@ -78,10 +77,7 @@ No tokens, no passwords, just works! ✅
 ## 🔒 SSH KEY LOCATIONS
 
 Your keys are stored at:
-- `~/.ssh/id_ed25519_ana` (private - keep safe)
-- `~/.ssh/id_ed25519_ana.pub` (public - paste to GitHub)
-- `~/.ssh/id_ed25519_ana_showcase` (private - keep safe)
-- `~/.ssh/id_ed25519_ana_showcase.pub` (public - paste to GitHub)
+
 
 ---
 
