@@ -1,6 +1,7 @@
 
 import os
 import json
+import logging
 from datetime import date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseBadRequest, Http404, JsonResponse, HttpResponseForbidden
@@ -19,6 +20,8 @@ from django.middleware.csrf import get_token
 from django.core.exceptions import PermissionDenied
 from django.conf import settings
 from django.core.cache import cache
+
+logger = logging.getLogger('mini_notion')
 
 from .models import (
     UserProfile,
@@ -884,11 +887,32 @@ def _fetch_apod_cached(apod_date):
     if cached is not None:
         return cached
 
-    data = fetch_apod(
-        api_key=settings.NASA_API_KEY,
-        timeout_seconds=settings.NASA_API_TIMEOUT,
-        apod_date=apod_date,
-    )
+    # Fallback demo data for environments with restricted network access (e.g., PythonAnywhere free tier)
+    FALLBACK_DEMO = {
+        "date": "2024-01-01",
+        "title": "NASA APOD Demo (Offline Mode)",
+        "explanation": "This is a demo response. To use live NASA APOD data, ensure your hosting supports outbound HTTPS requests to api.nasa.gov. You can also generate your own API key at https://api.nasa.gov/",
+        "media_type": "image",
+        "url": "https://apod.nasa.gov/apod/image/2401/m1_hubble_2048.jpg",
+        "hdurl": "https://apod.nasa.gov/apod/image/2401/m1_hubble_full.jpg",
+        "copyright": "NASA/ESA/Hubble"
+    }
+
+    try:
+        data = fetch_apod(
+            api_key=settings.NASA_API_KEY,
+            timeout_seconds=settings.NASA_API_TIMEOUT,
+            apod_date=apod_date,
+        )
+    except NasaApiError as e:
+        # If API call fails (network restricted, timeout, etc.), use fallback
+        logger.warning(f"NASA APOD API error: {e}. Using fallback demo data.")
+        data = FALLBACK_DEMO
+    except Exception as e:
+        # Catch any other unexpected errors and use fallback
+        logger.error(f"Unexpected error fetching APOD: {type(e).__name__}: {e}")
+        data = FALLBACK_DEMO
+
     cache.set(cache_key, data, timeout=settings.NASA_API_CACHE_TIMEOUT)
     return data
 
