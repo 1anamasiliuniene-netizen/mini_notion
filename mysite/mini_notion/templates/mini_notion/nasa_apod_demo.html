@@ -46,7 +46,7 @@
     <div class="card-header bg-light">
         <h4 class="mb-2">{{ apod_data.title }}</h4>
         {% if apod_data.date %}
-        <small class="text-muted d-block">📅 {{ apod_data.date }}</small>
+        <small class="text-muted d-block">{{ apod_data.date }}</small>
         {% endif %}
     </div>
 
@@ -81,7 +81,7 @@
 
             <!-- Right column: Text Description -->
             <div class="col-lg-6 col-md-12 d-flex flex-column">
-                <p class="lead" style="line-height:1.8; color: #333;">
+                <p class="lead" style="line-height:1.8;">
                     {{ apod_data.explanation }}
                 </p>
 
