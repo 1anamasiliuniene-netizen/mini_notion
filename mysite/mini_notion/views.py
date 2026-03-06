@@ -890,8 +890,15 @@ def _fetch_apod_cached(apod_date):
     # Fallback demo data for environments with restricted network access (e.g., PythonAnywhere free tier)
     FALLBACK_DEMO = {
         "date": "2024-01-01",
-        "title": "NASA APOD Demo (Offline Mode)",
-        "explanation": "This is a demo response. To use live NASA APOD data, ensure your hosting supports outbound HTTPS requests to api.nasa.gov. You can also generate your own API key at https://api.nasa.gov/",
+        "title": "NASA APOD Demo (Rate Limit Reached)",
+        "explanation": "You've reached the NASA API rate limit. The DEMO_KEY allows only 30 requests per hour. "
+                      "To continue using live NASA data, get your FREE API key (takes 2 minutes): "
+                      "1) Visit https://api.nasa.gov/ "
+                      "2) Enter your name and email "
+                      "3) Copy your API key "
+                      "4) Add it to your .env file: NASA_API_KEY=your-key-here "
+                      "Your free key allows 1,000 requests per hour! "
+                      "This demo image is the Crab Nebula (M1) captured by Hubble Space Telescope.",
         "media_type": "image",
         "url": "https://apod.nasa.gov/apod/image/2401/m1_hubble_2048.jpg",
         "hdurl": "https://apod.nasa.gov/apod/image/2401/m1_hubble_full.jpg",
