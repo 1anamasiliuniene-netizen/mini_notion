@@ -2,6 +2,8 @@
 
 This is a Django-based project and task management app with role-based collaboration.
 
+LIVE DEMO: https://anama.pythonanywhere.com/dashboard/
+
 ## App Characteristics
 
 - User authentication: sign up, login/logout, password reset.
