@@ -1,0 +1,233 @@
+/* Page background */
+body {
+    background-color: #fdf6f0;
+    color: #6c757d;
+    font-family: 'Merriweather', serif;
+}
+
+.hero-section,
+.navbar,
+button.btn,
+input[type="submit"],
+input[type="button"],
+a.btn {
+    color: inherit; /* keep your custom color */
+}
+
+.hero-section {
+    background-color: #007399; /* dark pastel */
+    padding: 4rem 0;
+    color: white;
+}
+
+.hero-title {
+    font-weight: 700;      /* bold */
+    margin-bottom: 1rem;
+}
+
+.hero-random-phrase {
+    font-style: italic;     /* true italic */
+    font-weight: 300;       /* light */
+    font-size: 1.25rem;
+    color: white;
+}
+
+/* Cards */
+.card {
+    background-color: #fff !important;
+    color: #6c757d !important;
+    border-radius: 16px;
+    text-align: left;
+    padding: 1.5rem;
+    width: auto;
+    max-width: 100%;
+    min-height: 250px;
+    margin-bottom: 2rem;
+    box-shadow: 0 6px 15px rgba(128, 43, 0, 0.5);
+}
+
+/* Task detail buttons (including Add Comment) */
+.task-detail-card .btn,
+.task-detail-card button[type="submit"],
+.task-detail-card input[type="submit"] {
+    color: #fff !important;          /* force white text */
+    background-color: #009966 !important;
+    border-color: #009966 !important;
+}
+
+/* Force all project detail buttons to have white text */
+.card button.btn,
+.card a.btn {
+    color: #fff !important;
+}
+
+/* Keep hover effect consistent */
+.card button.btn:hover,
+.card a.btn:hover {
+    color: #fff !important;
+}
+
+.task-detail-card .btn:hover,
+.task-detail-card button[type="submit"]:hover,
+.task-detail-card input[type="submit"]:hover {
+    color: #fff !important;
+    background-color: #157347 !important;
+    border-color: #146c43 !important;
+}
+
+.task-detail-card button.btn-primary,
+form.task-detail-form button.btn-primary {
+    color: #fff !important;
+}
+
+.card-dashboard {
+    width: 100% !important;    /* fill the column */
+    max-width: 100% !important; /* remove the 500px limit */
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 6px 15px rgba(128, 43, 0, 0.5);
+}
+
+.card-dashboard a {
+    color: #6c757d !important;
+    text-decoration: none !important;
+}
+
+.card-dashboard a:hover {
+    text-decoration: underline !important;
+}
+
+.reports-card {
+    color: #6c757d; /* Bootstrap text-secondary color */
+}
+.card,
+.card *:not(.badge) {
+    color: #6c757d !important;
+}
+
+/* But keep links styled correctly */
+.card a {
+    color: #6c757d !important;
+    text-decoration: none !important;
+}
+
+.card a:hover {
+    text-decoration: underline !important;
+}
+
+/* Dropdown menus */
+.dropdown-menu,
+.dropdown-item {
+    color: #6c757d !important;
+}
+
+/* All links: secondary color, no underline by default */
+a {
+    color: #6c757d;
+    text-decoration: none;
+}
+
+/* Underline on hover */
+a:hover {
+    text-decoration: underline;
+}
+
+button.btn,
+input[type="submit"],
+input[type="button"],
+a.btn {
+    background-color: #009966 !important;
+    border-color: #009966 !important;
+    color: #fff !important;
+}
+
+button.btn:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+a.btn:hover {
+    background-color: #157347 !important;
+    border-color: #146c43 !important;
+    color: #fff !important;
+}
+
+.navbar-toggler {
+    background-color: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    padding: 0.25rem 0.75rem;
+}
+
+.navbar-toggler:hover,
+.navbar-toggler:focus {
+    background-color: transparent !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    box-shadow: none !important;
+}
+
+.navbar-toggler .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;charset=UTF8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%28255,255,255,1%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+.navbar .nav-link,
+.navbar .navbar-brand {
+    color: #f8f9fa !important;
+}
+
+.navbar .nav-link:hover,
+.navbar .navbar-brand:hover {
+    color: #ffffff !important;
+    text-decoration: underline;
+}
+
+.navbar .dropdown-menu .dropdown-item {
+    color: #6c757d !important;
+    background-color: transparent !important;
+}
+
+.navbar .dropdown-menu .dropdown-item:hover {
+    color: #6c757d !important;
+    background-color: rgba(0,0,0,0.05) !important;
+    text-decoration: underline;
+}
+
+.navbar .dropdown-menu .dropdown-item button {
+    color: #6c757d !important;
+    background: none !important;
+    border: none !important;
+    width: 100%;
+    text-align: left;
+    padding: 0.25rem 1rem;
+}
+
+/* Force all text in search results container to secondary gray */
+.search-results,
+.search-results h5,
+.search-results strong,
+.search-results td,
+.search-results th {
+    color: #6c757d !important;
+}
+
+/* Links in search results */
+.search-results a {
+    color: #6c757d !important;
+    text-decoration: none;
+}
+
+.search-results a:hover {
+    text-decoration: underline;
+}
+
+/* Badges */
+.search-results .badge {
+    color: #fff !important; /* keep badge text white */
+}
+
+@media print {
+    .list-group-item { page-break-inside: avoid; }
+}
+
+@media print {
+    body * { visibility: hidden; }
+    .report-card, .report-card * { visibility: visible; }
+}

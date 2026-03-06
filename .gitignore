@@ -2,11 +2,11 @@
 /mysite/mysite/my_settings.py
 /mysite/.env
 
-# Database
-/mysite/db.sqlite3
+# Database (but keep backups and development db for documentation)
+/mysite/db.sqlite3.bak
 *.db
 
-# Debug files
+# Debug files (Python only)
 *.py.bak
 debug*.py
 debug*.txt
@@ -46,9 +46,21 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Logs
+# Logs (but keep logs directory for documentation)
 *.log
+!logs/
+logs/*
+!logs/.gitkeep
 
 # Cache
 .cache/
 .pytest_cache/
+
+# IMPORTANT: Track all deployment documentation and configuration
+# These must be in version control for deployment
+!*.md
+!*.sh
+!.env.example
+!db.sqlite3.backup*
+!db.sqlite3
+
