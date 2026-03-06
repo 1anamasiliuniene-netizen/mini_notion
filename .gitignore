@@ -112,6 +112,6 @@ logs/*
 !.env.example
 
 # Explicitly keep this sensitive docs out of git
-SSH_KEYS_CONFIRMED.md
-SSH_KEYS_SETUP.md
-SSH_SETUP_COMPLETE.md
+DOC/SSH_KEYS_CONFIRMED.md
+DOC/SSH_KEYS_SETUP.md
+DOC/SSH_SETUP_COMPLETE.md

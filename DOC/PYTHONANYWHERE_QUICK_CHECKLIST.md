@@ -108,13 +108,14 @@ project_home = '/home/yourusername/PythonProject38'
 if project_home not in sys.path:
     sys.path.append(project_home)
 
-mysite_home = os.path.join(project_home, 'mysite')
+mysite_home = os.path.join(project_home, '../mysite')
 if mysite_home not in sys.path:
     sys.path.append(mysite_home)
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mysite.settings'
 
 from django.core.wsgi import get_wsgi_application
+
 application = get_wsgi_application()
 ```
 

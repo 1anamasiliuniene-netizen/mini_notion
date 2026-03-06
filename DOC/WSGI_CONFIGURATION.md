@@ -26,7 +26,7 @@ if project_home not in sys.path:
     sys.path.append(project_home)
 
 # Add mysite subdirectory to path
-mysite_home = os.path.join(project_home, 'mysite')
+mysite_home = os.path.join(project_home, '../mysite')
 if mysite_home not in sys.path:
     sys.path.append(mysite_home)
 
@@ -35,6 +35,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'mysite.settings'
 
 # Get WSGI application
 from django.core.wsgi import get_wsgi_application
+
 application = get_wsgi_application()
 ```
 
